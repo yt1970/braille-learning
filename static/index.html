@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>点字を学ぼう</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+  <h1 class="app-title">点字を学ぼう</h1>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-mode="seion">清音</button>
+    <button class="tab" data-mode="dakuten">濁音</button>
+    <button class="tab" data-mode="handaku">半濁音</button>
+    <button class="tab" data-mode="special">特殊符号</button>
+    <button class="tab" data-mode="word">単語</button>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="stat-cur">1</div><div class="stat-label">現在</div></div>
+    <div class="stat"><div class="stat-num correct" id="stat-right">0</div><div class="stat-label">正解</div></div>
+    <div class="stat"><div class="stat-num wrong" id="stat-wrong">0</div><div class="stat-label">不正解</div></div>
+  </div>
+
+  <div class="card" id="card">
+    <div class="card-tag" id="card-tag">点字</div>
+    <div class="braille-row" id="braille-display"></div>
+    <div class="card-sub" id="card-sub"></div>
+  </div>
+
+  <!-- 正誤フィードバック -->
+  <div class="feedback hidden" id="feedback">
+    <div class="feedback-icon" id="feedback-icon"></div>
+    <div class="feedback-msg" id="feedback-msg"></div>
+    <div class="feedback-correct" id="feedback-correct"></div>
+    <div class="mascot" id="mascot"></div>
+  </div>
+
+  <!-- 入力エリア -->
+  <div class="input-area" id="input-area">
+    <input type="text" id="answer-input" class="answer-input" placeholder="答えを入力（例: ア）" autocomplete="off" autocapitalize="none">
+    <button class="btn-check" id="btn-check" onclick="checkAnswer()">確認 ✓</button>
+  </div>
+
+  <div class="btn-row" id="btn-next-row" style="display:none">
+    <button class="btn btn-next" onclick="nextCard()">次へ →</button>
+  </div>
+
+  <!-- 結果画面 -->
+  <div class="result hidden" id="result">
+    <div class="result-emoji" id="result-emoji">🎉</div>
+    <div class="result-title" id="result-title">おつかれさま！</div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-score-wrap">
+      <div class="result-score" id="result-score">0%</div>
+      <div class="result-score-label">正解率</div>
+    </div>
+    <div class="result-btns">
+      <button class="btn btn-retry" onclick="restart(false)">もう一度</button>
+      <button class="btn btn-wrong-only" onclick="restart(true)">不正解のみ</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/braille_data.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
