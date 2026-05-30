@@ -10,7 +10,11 @@
 <div class="app">
   <h1 class="app-title">点字を学ぼう</h1>
 
-
+  <!-- 読む / 打つ 切替 -->
+  <div class="mode-row">
+    <button class="mode-btn active" id="mode-read" onclick="switchInputMode('read')">👁 読む</button>
+    <button class="mode-btn" id="mode-type" onclick="switchInputMode('type')">✋ 打つ</button>
+  </div>
 
   <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
 
@@ -22,8 +26,26 @@
 
   <div class="card" id="card">
     <div class="card-tag" id="card-tag">点字</div>
-    <div class="braille-row" id="braille-display"></div>
+
+    <!-- 読むモード: 点字表示 -->
+    <div class="braille-wrapper" id="braille-wrapper">
+      <div class="braille-row" id="braille-display"></div>
+      <div class="scroll-indicator hidden" id="scroll-indicator">右へスクロール ➔</div>
+    </div>
+
+    <!-- 打つモード: 文字表示 -->
+    <div class="typing-char hidden" id="typing-char"></div>
+
     <div class="card-sub" id="card-sub"></div>
+  </div>
+
+  <!-- 打つモード: 点字入力エリア -->
+  <div class="typing-area hidden" id="typing-area">
+    <div class="typing-dir">
+      <span class="typing-dir-arrow">←</span> 右から左に打ちます
+    </div>
+    <div class="typing-cells-row" id="typing-cells"></div>
+    <button class="btn-check" onclick="checkAnswer()">確認 ✓</button>
   </div>
 
   <!-- 正誤フィードバック -->
@@ -34,7 +56,7 @@
     <div class="mascot" id="mascot"></div>
   </div>
 
-  <!-- 入力エリア -->
+  <!-- 入力エリア（読むモード） -->
   <div class="input-area" id="input-area">
     <input type="text" id="answer-input" class="answer-input" placeholder="答えを入力（例: ア）" autocomplete="off" autocapitalize="none">
     <button class="btn-check" id="btn-check" onclick="checkAnswer()">確認 ✓</button>
@@ -60,11 +82,9 @@
   </div>
 
   <div class="tabs" id="tabs">
-    <button class="tab active" data-mode="seion">清音</button>
-    <button class="tab" data-mode="dakuten">濁音</button>
-    <button class="tab" data-mode="handaku">半濁音</button>
-    <button class="tab" data-mode="special">特殊符号</button>
-    <button class="tab" data-mode="word">単語</button>
+    <button class="tab active" data-mode="shokyu">初級</button>
+    <button class="tab" data-mode="chukyu">中級</button>
+    <button class="tab" data-mode="idiom">四字熟語</button>
   </div>
 </div>
 
