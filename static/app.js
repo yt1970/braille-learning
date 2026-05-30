@@ -117,7 +117,7 @@ function renderCard() {
     renderBraille(braille, item.cells);
   } else {
     tag.textContent = '単語（点字）';
-    sub.textContent = `意味のヒント: ${item.meaning}`;
+    sub.textContent = 'この単語は何と読む？';
     renderWordBraille(braille, item.text);
   }
 }

@@ -43,7 +43,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
 }
 
 /* タブ */
-.tabs { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 5px; margin-top: 24px; flex-wrap: wrap; }
 .tab {
   flex: 1; min-width: 56px;
   padding: 7px 4px;
