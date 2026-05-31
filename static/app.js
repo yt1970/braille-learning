@@ -1,35 +1,27 @@
-// ─── 定数 ───────────────────────────────────────────────────────────────
 const CORRECT_MSGS    = ['すごい！', 'やったね！', '完璧！', 'さすが！', 'その調子！', 'ばっちり！'];
 const CORRECT_MASCOTS = ['🐱','🐶','🐰','🦊','🐻','🐼','🐨','🐸','🦁','🐯'];
 const WRONG_MSGS      = ['惜しい！', 'もう一度！', '次は大丈夫！', 'ファイト！', '諦めないで！'];
 const WRONG_MASCOTS   = ['😢','😿','🥺','😖','💦'];
 
-// ─── 状態 ────────────────────────────────────────────────────────────────
 let mode = 'shokyu', inputMode = 'read';
 let deck = [], idx = 0, right = 0, wrong = 0, retryDeck = [], answered = false;
 
-// ─── 初期化 ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => switchMode(btn.dataset.mode));
   });
   document.getElementById('answer-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      if (!answered) checkAnswer();
-      else nextCard();
-    }
+    if (e.key === 'Enter') { if (!answered) checkAnswer(); else nextCard(); }
   });
   switchMode('shokyu');
 });
 
-// ─── カテゴリ切替 ────────────────────────────────────────────────────────
 function switchMode(m) {
   mode = m;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
   restart(false);
 }
 
-// ─── 読む / 打つ 切替 ────────────────────────────────────────────────────
 function switchInputMode(m) {
   inputMode = m;
   document.getElementById('mode-read').classList.toggle('active', m === 'read');
@@ -37,15 +29,15 @@ function switchInputMode(m) {
   restart(false);
 }
 
-// ─── デッキ構築 ──────────────────────────────────────────────────────────
 function buildDeck() {
   if (mode === 'shokyu') {
-    const seionCards   = Object.keys(SEION).map(k => ({ type: 'seion',   key: k }));
-    const dakuCards    = Object.keys(DAKUON).map(k => ({ type: 'daku',   key: k }));
-    const handakuCards = Object.keys(HANDAKUON).map(k => ({ type: 'handaku', key: k }));
-    const specialCards = SPECIAL_ITEMS.map(s => ({ type: 'special', key: s.key, cells: s.cells, desc: s.desc }));
-    const youonCards   = Object.keys(YOUON_MAP).map(k => ({ type: 'youon', key: k }));
-    return [...seionCards, ...dakuCards, ...handakuCards, ...specialCards, ...youonCards];
+    return [
+      ...Object.keys(SEION).map(k => ({ type: 'seion', key: k })),
+      ...Object.keys(DAKUON).map(k => ({ type: 'daku', key: k })),
+      ...Object.keys(HANDAKUON).map(k => ({ type: 'handaku', key: k })),
+      ...SPECIAL_ITEMS.map(s => ({ type: 'special', key: s.key, cells: s.cells, desc: s.desc })),
+      ...Object.keys(YOUON_MAP).map(k => ({ type: 'youon', key: k })),
+    ];
   }
   if (mode === 'chukyu') return WORDS.map(w => ({ type: 'word',  text: w.text, meaning: w.meaning }));
   if (mode === 'idiom')  return IDIOMS.map(w => ({ type: 'idiom', text: w.text, meaning: w.meaning }));
@@ -61,9 +53,9 @@ function shuffle(a) {
   return b;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// 読むモード: 点字レンダリング
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// 点字レンダリング（読むモード）
+// ══════════════════════════════════════════════════════
 
 function renderDot(grid, container, isPrefix = false) {
   const cell = document.createElement('div');
@@ -76,22 +68,23 @@ function renderDot(grid, container, isPrefix = false) {
   container.appendChild(cell);
 }
 
-function renderBraille(container, cells, prefix = null) {
-  container.innerHTML = '';
-  if (prefix) renderDot(prefix.grid, container, true);
-  cells.forEach(g => renderDot(g, container, false));
-}
-
+// #12 fix: YOUON_MAP の prefix は既に pts() で生成済みの1マスグリッド
 function appendYouon(container, key) {
   const entry = YOUON_MAP[key];
   if (!entry) return;
-  entry.prefix.forEach(pNum => renderDot(pts([pNum]), container, true));
+  renderDot(entry.prefix, container, true);        // prefix は1マスのグリッド
   if (SEION[entry.base]) renderDot(SEION[entry.base], container, false);
 }
 
 function renderYouon(container, key) {
   container.innerHTML = '';
   appendYouon(container, key);
+}
+
+function renderBraille(container, cells, prefixGrid = null) {
+  container.innerHTML = '';
+  if (prefixGrid) renderDot(prefixGrid, container, true);
+  cells.forEach(g => renderDot(g, container, false));
 }
 
 function renderWordBraille(container, text) {
@@ -119,37 +112,31 @@ function updateScrollIndicator() {
   const row = document.getElementById('braille-display');
   const ind = document.getElementById('scroll-indicator');
   if (!row || !ind) return;
-  ind.classList.toggle('hidden', row.scrollWidth <= row.clientWidth + 4);
+  const needsScroll = row.scrollWidth > row.clientWidth + 4;
+  ind.classList.toggle('hidden', !needsScroll);
   row.addEventListener('scroll', () => {
     ind.classList.toggle('hidden', row.scrollLeft + row.clientWidth >= row.scrollWidth - 4);
   }, { passive: true });
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// 打つモード: ヘルパー関数
+// ══════════════════════════════════════════════════════
+// 打つモード: グリッド変換
+// ──────────────────────────────────────────────────────
+// 【凸面（読む面）】左列=1・2・3点, 右列=4・5・6点
+// 【凹面（打つ面）】左右が鏡像。左列=4・5・6点, 右列=1・2・3点
+//   → 各マスを mirrorGrid で左右反転
 //
-// 【点字台の向き】
-//   読む向き（画面表示）: 左列=1・2・3点, 右列=4・5・6点
-//   打つ向き（台に向かう）: 左列=4・5・6点, 右列=1・2・3点
-//     → グリッドの列を左右入れ替え（mirrorGrid）
-//
-// 【複数マスの順序】
-//   読む向き: 左のマスから右へ（先頭文字が左）
-//   打つ向き: 右から左へ打つ（先頭文字を最後に打つ）
-//     → 配列を逆順にして「打つ順に右端から並べる」
-//
-// 【UI上の並び】
-//   画面には左→右の順で並べるが、
-//   「先に打つマス = 右端」として逆順で配置する
-//   つまり: readingCells[0] が画面右端、readingCells[N-1] が画面左端
-// ═══════════════════════════════════════════════════════════════════════
+// 【マスの並び順】
+//   読む方向: 左→右（1文字目が左端）
+//   打つ方向: 右→左（1文字目が右端）
+//   → #11 fix: UI上のマス配列を逆順にし、1文字目が右端に来るようにする
+// ══════════════════════════════════════════════════════
 
-// 左右反転: 読む向きグリッド → 打つ向きグリッド
 function mirrorGrid(grid) {
   return grid.map(row => [row[1], row[0]]);
 }
 
-// アイテムの「読む順」グリッド配列（左から右の順）
+// 「読む順」のグリッド配列（左→右）
 function getReadingCells(item) {
   if (item.type === 'seion')   return [SEION[item.key]];
   if (item.type === 'daku')    return [DAKU_PREFIX, DAKUON[item.key]];
@@ -158,13 +145,13 @@ function getReadingCells(item) {
   if (item.type === 'youon') {
     const e = YOUON_MAP[item.key];
     if (!e) return [];
-    return [...e.prefix.map(p => pts([p])), SEION[e.base]];
+    // prefix は1マスのグリッドなのでそのまま配列に入れる
+    return [e.prefix, SEION[e.base]];
   }
   if (item.type === 'word' || item.type === 'idiom') return getWordCells(item.text);
   return [];
 }
 
-// テキストを解析してグリッド配列を返す
 function getWordCells(text) {
   const cells = [];
   const chars = [...text];
@@ -174,8 +161,8 @@ function getWordCells(text) {
       const two = chars[i] + chars[i + 1];
       if (YOUON_MAP[two]) {
         const e = YOUON_MAP[two];
-        e.prefix.forEach(p => cells.push(pts([p])));
-        cells.push(SEION[e.base]);
+        cells.push(e.prefix);           // 1マス
+        cells.push(SEION[e.base]);      // 1マス
         i += 2; continue;
       }
     }
@@ -192,23 +179,16 @@ function getWordCells(text) {
   return cells;
 }
 
-// 「打つ向き」グリッド配列を返す
-// fix: readingCells を逆順にしてから mirrorGrid を適用し、
-//      UI上は「先に打つマスが右端」になるよう再び逆順で返す
-// 結果: typingCells[0] = 画面左端（最後に打つ）, typingCells[N-1] = 画面右端（最初に打つ）
+// #11 fix: 読む順グリッドを逆順にしてから mirrorGrid
+// → UI上は左端が「最後に打つマス」、右端が「最初に打つマス」
 function getTypingCells(item) {
   const reading = getReadingCells(item);
-  // 読む順（左→右）のグリッドを左右反転し、打つ順（右端から左へ）で並べる
-  // UI表示は左→右なので、打つ順の逆（= 読む順）で配置 → mirrorGrid だけ適用
-  return reading.map(mirrorGrid);
+  return [...reading].reverse().map(mirrorGrid);
 }
 
-// checkTypingAnswer で使う「期待グリッド」は typingCells[cellIdx] と一致するよう
-// UI生成側と評価側で同じ getTypingCells を参照する（統一済み）
-
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // カード描画
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 
 function renderCard() {
   if (inputMode === 'type') { renderTypingCard(); return; }
@@ -220,66 +200,54 @@ function renderCard() {
   updateProgress();
   hideFeedback();
   document.getElementById('btn-next-row').style.display = 'none';
-
   document.getElementById('input-area').style.display = '';
   document.getElementById('braille-wrapper').style.display = '';
   document.getElementById('typing-char').classList.add('hidden');
   document.getElementById('typing-area').classList.add('hidden');
 
   const inp = document.getElementById('answer-input');
-  inp.value = ''; inp.disabled = false; inp.className = 'answer-input'; inp.focus();
+  inp.value = ''; inp.disabled = false; inp.className = 'answer-input';
+  // #14 fix: placeholder を空に統一
+  inp.placeholder = '';
+  inp.focus();
 
   const braille = document.getElementById('braille-display');
-  const sub     = document.getElementById('card-sub');
   const tag     = document.getElementById('card-tag');
   braille.scrollLeft = 0;
 
+  // #14 fix: card-sub（ヒント文）は表示しない → 空文字
+  document.getElementById('card-sub').textContent = '';
+
   if (item.type === 'seion') {
     tag.textContent = '点字（清音）';
-    sub.textContent = 'この点字は何の文字？';
     renderBraille(braille, [SEION[item.key]]);
-    inp.placeholder = '例: ア';
   } else if (item.type === 'daku') {
     tag.textContent = '点字（濁音）';
-    sub.textContent = '緑=濁音符（5点）+ 清音で何の文字？';
-    renderBraille(braille, [DAKUON[item.key]], { grid: DAKU_PREFIX });
-    inp.placeholder = '例: ガ';
+    renderBraille(braille, [DAKUON[item.key]], DAKU_PREFIX);
   } else if (item.type === 'handaku') {
     tag.textContent = '点字（半濁音）';
-    sub.textContent = '緑=半濁音符（6点）+ は行で何の文字？';
-    renderBraille(braille, [HANDAKUON[item.key]], { grid: HANDAKU_PREFIX });
-    inp.placeholder = '例: パ';
+    renderBraille(braille, [HANDAKUON[item.key]], HANDAKU_PREFIX);
   } else if (item.type === 'special') {
     tag.textContent = '点字（特殊符号）';
-    sub.textContent = 'この特殊符号は何？';
     renderBraille(braille, item.cells);
-    inp.placeholder = '例: ン';
   } else if (item.type === 'youon') {
     const e = YOUON_MAP[item.key];
-    const prefLen = e ? e.prefix.length : 0;
-    tag.textContent = prefLen === 1 ? '点字（拗音）'
-                    : e.prefix[0] === 5 ? '点字（濁音の拗音）'
-                    : '点字（半濁音の拗音）';
-    sub.textContent = prefLen === 1 ? '緑=拗音符（4点）＋清音で何の文字？'
-                    : '緑=前置符＋清音で何の文字？';
+    tag.textContent = !e         ? '点字（拗音）'
+      : e.prefix === pts([4])   ? '点字（拗音）'
+      : e.prefix === pts([4,5]) ? '点字（濁音の拗音）'
+      :                           '点字（半濁音の拗音）';
     renderYouon(braille, item.key);
-    inp.placeholder = '例: キャ';
   } else if (item.type === 'word') {
     tag.textContent = '単語（中級）';
-    sub.textContent = 'この点字は何と読む？';
     renderWordBraille(braille, item.text);
-    inp.placeholder = '読み方をカタカナで入力';
   } else if (item.type === 'idiom') {
     tag.textContent = '四字熟語';
-    sub.textContent = 'この点字は何と読む？';
     renderWordBraille(braille, item.text);
-    inp.placeholder = '読み方をカタカナで入力';
   }
 
   requestAnimationFrame(() => updateScrollIndicator());
 }
 
-// ─── 打つモード カード描画 ─────────────────────────────────────────────
 function renderTypingCard() {
   if (idx >= deck.length) { showResult(); return; }
   const item = deck[idx];
@@ -288,7 +256,6 @@ function renderTypingCard() {
   updateProgress();
   hideFeedback();
   document.getElementById('btn-next-row').style.display = 'none';
-
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('braille-wrapper').style.display = 'none';
   document.getElementById('typing-char').classList.remove('hidden');
@@ -297,44 +264,39 @@ function renderTypingCard() {
   const tag        = document.getElementById('card-tag');
   const sub        = document.getElementById('card-sub');
   const typingChar = document.getElementById('typing-char');
+  const readingN   = getReadingCells(item).length;
 
   if (item.type === 'seion') {
-    tag.textContent        = '打つ練習（清音）';
+    tag.textContent = '打つ練習（清音）';
     typingChar.textContent = item.key;
-    sub.textContent        = '1マスを打ちましょう';
+    sub.textContent = '1マス';
   } else if (item.type === 'daku') {
-    tag.textContent        = '打つ練習（濁音）';
+    tag.textContent = '打つ練習（濁音）';
     typingChar.textContent = item.key;
-    sub.textContent        = '2マス：左→濁音符、右→清音（左から順に打つ）';
+    sub.textContent = '2マス（右から打つ）';
   } else if (item.type === 'handaku') {
-    tag.textContent        = '打つ練習（半濁音）';
+    tag.textContent = '打つ練習（半濁音）';
     typingChar.textContent = item.key;
-    sub.textContent        = '2マス：左→半濁音符、右→清音（左から順に打つ）';
+    sub.textContent = '2マス（右から打つ）';
   } else if (item.type === 'special') {
-    tag.textContent        = '打つ練習（特殊符号）';
+    tag.textContent = '打つ練習（特殊符号）';
     typingChar.textContent = item.key.replace(/（.*?）/g, '');
-    sub.textContent        = '1マスを打ちましょう';
+    sub.textContent = '1マス';
   } else if (item.type === 'youon') {
-    const e = YOUON_MAP[item.key];
-    const n = e ? e.prefix.length + 1 : 2;
-    tag.textContent        = '打つ練習（拗音）';
+    tag.textContent = '打つ練習（拗音）';
     typingChar.textContent = item.key;
-    sub.textContent        = `${n}マスを左から順に打ちましょう`;
+    sub.textContent = `${readingN}マス（右から打つ）`;
   } else if (item.type === 'word') {
-    tag.textContent      = '打つ練習（単語）';
+    tag.textContent = '打つ練習（単語）';
     typingChar.innerHTML = `${item.text}<span class="typing-meaning">（${item.meaning}）</span>`;
-    const n = getReadingCells(item).length;
-    sub.textContent      = `${n}マスを左から順に打ちましょう`;
+    sub.textContent = `${readingN}マス（右から打つ）`;
   } else if (item.type === 'idiom') {
-    tag.textContent      = '打つ練習（四字熟語）';
+    tag.textContent = '打つ練習（四字熟語）';
     typingChar.innerHTML = `${item.text}<span class="typing-meaning">（${item.meaning}）</span>`;
-    const n = getReadingCells(item).length;
-    sub.textContent      = `${n}マスを左から順に打ちましょう`;
+    sub.textContent = `${readingN}マス（右から打つ）`;
   }
 
-  // 打つマスを生成
-  // fix: typingCells[i] は「打つ向き（左右反転）」のグリッド
-  //      UI上は左→右の順（読む方向と同じ並び）で表示し、打つ向きに合わせて左右が反転している
+  // #11 fix: typingCells は逆順（右端=最初に打つ）
   const typingCells = getTypingCells(item);
   const container   = document.getElementById('typing-cells');
   container.innerHTML = '';
@@ -343,9 +305,6 @@ function renderTypingCard() {
     const cell = document.createElement('div');
     cell.className = 'braille-cell typing-cell';
     cell.dataset.cellIdx = cellIdx;
-
-    // 3行×2列のクリッカブルドット
-    // 打つ向き: 左列 = 4・5・6点, 右列 = 1・2・3点
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 2; col++) {
         const dot = document.createElement('div');
@@ -364,9 +323,9 @@ function renderTypingCard() {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // 回答チェック
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 
 function checkAnswer() {
   if (inputMode === 'type') { checkTypingAnswer(); return; }
@@ -385,28 +344,20 @@ function checkAnswer() {
   inp.disabled = true;
   inp.className = 'answer-input ' + (isCorrect ? 'input-correct' : 'input-wrong');
 
-  if (isCorrect) {
-    right++;
-    document.getElementById('stat-right').textContent = right;
-    showFeedback(true, correctKeys[0]);
-  } else {
-    wrong++;
-    retryDeck.push(item);
-    document.getElementById('stat-wrong').textContent = wrong;
-    showFeedback(false, correctKeys[0]);
-  }
+  if (isCorrect) { right++; showFeedback(true, correctKeys[0]); }
+  else           { wrong++; retryDeck.push(item); showFeedback(false, correctKeys[0]); }
 
+  document.getElementById('stat-right').textContent = right;
+  document.getElementById('stat-wrong').textContent = wrong;
   document.getElementById('input-area').style.display  = 'none';
   document.getElementById('btn-next-row').style.display = '';
 }
 
-// 打つモード: 回答チェック
 function checkTypingAnswer() {
   if (answered) return;
   answered = true;
 
   const item        = deck[idx];
-  // fix: getTypingCells で得た「打つ向きグリッド」と UI の dot を比較
   const typingCells = getTypingCells(item);
   const container   = document.getElementById('typing-cells');
   const cellEls     = container.querySelectorAll('.typing-cell');
@@ -418,12 +369,8 @@ function checkTypingAnswer() {
     if (!expected) return;
 
     const dots = cellEl.querySelectorAll('.typing-dot');
-
-    // ユーザーの入力グリッドを構築（row/col は DOM の dataset 通り）
     const userGrid = [[0,0],[0,0],[0,0]];
-    dots.forEach(d => {
-      userGrid[+d.dataset.row][+d.dataset.col] = d.classList.contains('on') ? 1 : 0;
-    });
+    dots.forEach(d => { userGrid[+d.dataset.row][+d.dataset.col] = d.classList.contains('on') ? 1 : 0; });
 
     const correct = expected.every((row, r) => row.every((v, c) => v === userGrid[r][c]));
 
@@ -432,12 +379,11 @@ function checkTypingAnswer() {
     } else {
       allCorrect = false;
       cellEl.classList.add('cell-wrong');
-      // 正解を重ね表示（緑=打ち忘れ, 赤=余分）
       dots.forEach(d => {
         const r = +d.dataset.row, c = +d.dataset.col;
         const shouldOn = expected[r][c] === 1;
         const wasOn    = userGrid[r][c]  === 1;
-        d.classList.remove('on', 'off');
+        d.classList.remove('on','off');
         d.classList.add(shouldOn ? 'on' : 'off');
         if ( shouldOn && !wasOn) d.classList.add('dot-missed');
         if (!shouldOn &&  wasOn) d.classList.add('dot-extra');
@@ -446,6 +392,7 @@ function checkTypingAnswer() {
     cellEl.querySelectorAll('.typing-dot').forEach(d => d.style.pointerEvents = 'none');
   });
 
+  // 表示用テキスト
   let displayText = '';
   if (['seion','daku','handaku','youon'].includes(item.type)) displayText = item.key;
   else if (item.type === 'special') displayText = item.key.replace(/（.*?）/g, '');
@@ -459,28 +406,24 @@ function checkTypingAnswer() {
     wrong++;
     retryDeck.push(item);
     document.getElementById('stat-wrong').textContent = wrong;
-    showFeedback(false, displayText);
+    // #13 fix: 不正解時は正しい点字を表示（showFeedback に読みテキストも渡すが点字表示が主）
+    showFeedbackWithBraille(displayText, item);
   }
 
   document.getElementById('btn-next-row').style.display = '';
 }
 
-// ─── 共通ヘルパー ──────────────────────────────────────────────────────
-function updateProgress() {
-  const pct = Math.round(idx / deck.length * 100);
-  document.getElementById('prog').style.width            = pct + '%';
-  document.getElementById('stat-cur').textContent        = idx + 1;
-  document.getElementById('stat-right').textContent      = right;
-  document.getElementById('stat-wrong').textContent      = wrong;
-}
+// ══════════════════════════════════════════════════════
+// フィードバック
+// ══════════════════════════════════════════════════════
 
-// ─── フィードバック ────────────────────────────────────────────────────
 function showFeedback(isCorrect, correctAnswer) {
   const fb   = document.getElementById('feedback');
   const icon = document.getElementById('feedback-icon');
   const msg  = document.getElementById('feedback-msg');
   const corr = document.getElementById('feedback-correct');
   const masc = document.getElementById('mascot');
+  const brailleAnswer = document.getElementById('feedback-braille');
 
   fb.className = 'feedback ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
 
@@ -489,26 +432,65 @@ function showFeedback(isCorrect, correctAnswer) {
     msg.textContent  = pick(CORRECT_MSGS); msg.style.color = 'var(--teal)';
     corr.textContent = '';
     masc.textContent = pick(CORRECT_MASCOTS);
+    if (brailleAnswer) brailleAnswer.innerHTML = '';
   } else {
     icon.textContent = '❌'; icon.className = 'feedback-icon shake-it';
     msg.textContent  = pick(WRONG_MSGS); msg.style.color = 'var(--coral)';
-    corr.textContent = `正解は「${correctAnswer}」だよ！`;
+    corr.textContent = `正解は「${correctAnswer}」`;
     masc.textContent = pick(WRONG_MASCOTS);
+    if (brailleAnswer) brailleAnswer.innerHTML = '';
   }
 }
 
-function hideFeedback() { document.getElementById('feedback').className = 'feedback hidden'; }
+// #13 fix: 打つモード不正解時に正しい点字を表示
+function showFeedbackWithBraille(displayText, item) {
+  const fb   = document.getElementById('feedback');
+  const icon = document.getElementById('feedback-icon');
+  const msg  = document.getElementById('feedback-msg');
+  const corr = document.getElementById('feedback-correct');
+  const masc = document.getElementById('mascot');
+  const brailleAnswer = document.getElementById('feedback-braille');
+
+  fb.className = 'feedback wrong-fb';
+  icon.textContent = '❌'; icon.className = 'feedback-icon shake-it';
+  msg.textContent  = pick(WRONG_MSGS); msg.style.color = 'var(--coral)';
+  corr.textContent = `正解「${displayText}」の点字（読む向き）:`;
+  masc.textContent = pick(WRONG_MASCOTS);
+
+  // 正しい点字を読む向きで表示
+  if (brailleAnswer) {
+    brailleAnswer.innerHTML = '';
+    const readingCells = getReadingCells(item);
+    readingCells.forEach(g => renderDot(g, brailleAnswer, false));
+  }
+}
+
+function hideFeedback() {
+  document.getElementById('feedback').className = 'feedback hidden';
+  const ba = document.getElementById('feedback-braille');
+  if (ba) ba.innerHTML = '';
+}
+
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-// ─── 次へ ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+// ナビゲーション・共通
+// ══════════════════════════════════════════════════════
+
+function updateProgress() {
+  document.getElementById('prog').style.width  = Math.round(idx / deck.length * 100) + '%';
+  document.getElementById('stat-cur').textContent   = idx + 1;
+  document.getElementById('stat-right').textContent = right;
+  document.getElementById('stat-wrong').textContent = wrong;
+}
+
 function nextCard() { idx++; renderCard(); }
 
-// ─── 結果表示 ──────────────────────────────────────────────────────────
 function showResult() {
   document.getElementById('card').style.display = 'none';
   document.getElementById('typing-area').classList.add('hidden');
   hideFeedback();
-  document.getElementById('input-area').style.display  = 'none';
+  document.getElementById('input-area').style.display   = 'none';
   document.getElementById('btn-next-row').style.display = 'none';
 
   const total = right + wrong;
@@ -528,13 +510,11 @@ function showResult() {
   document.getElementById('result').classList.remove('hidden');
 }
 
-// ─── 再挑戦 ───────────────────────────────────────────────────────────
 function restart(retryOnly) {
   right = 0; wrong = 0; idx = 0;
   const source = (retryOnly && retryDeck.length > 0) ? retryDeck : buildDeck();
   retryDeck = [];
   deck = shuffle(source);
-
   document.getElementById('card').style.display = '';
   document.getElementById('result').classList.add('hidden');
   renderCard();

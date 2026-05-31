@@ -49,16 +49,19 @@
   </div>
 
   <!-- 正誤フィードバック -->
+  <!-- #13: feedback-braille を追加（不正解時に正しい点字を読む向きで表示） -->
   <div class="feedback hidden" id="feedback">
     <div class="feedback-icon" id="feedback-icon"></div>
     <div class="feedback-msg" id="feedback-msg"></div>
     <div class="feedback-correct" id="feedback-correct"></div>
+    <div class="feedback-braille braille-row" id="feedback-braille"></div>
     <div class="mascot" id="mascot"></div>
   </div>
 
   <!-- 入力エリア（読むモード） -->
+  <!-- #14: placeholder を空に -->
   <div class="input-area" id="input-area">
-    <input type="text" id="answer-input" class="answer-input" placeholder="答えを入力（例: ア）" autocomplete="off" autocapitalize="none">
+    <input type="text" id="answer-input" class="answer-input" placeholder="" autocomplete="off" autocapitalize="none">
     <button class="btn-check" id="btn-check" onclick="checkAnswer()">確認 ✓</button>
   </div>
 
@@ -81,6 +84,7 @@
     </div>
   </div>
 
+  <!-- #10: タブを下部に移動（キーボード出現時に点字が隠れない） -->
   <div class="tabs" id="tabs">
     <button class="tab active" data-mode="shokyu">初級</button>
     <button class="tab" data-mode="chukyu">中級</button>

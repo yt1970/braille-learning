@@ -32,7 +32,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #fafafa; min-height: 100vh; }
 
-.app { max-width: 420px; margin: 0 auto; padding: 16px 12px 40px; }
+/* #10 fix: タブ分の余白を下に確保 */
+.app { max-width: 420px; margin: 0 auto; padding: 16px 12px 88px; }
 
 .app-title {
   text-align: center;
@@ -73,15 +74,31 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
   .mode-btn.active { background: #2c2c2e; }
 }
 
-/* ─── タブ ───────────────────────────────────────────────────────────── */
-.tabs { display: flex; gap: 5px; margin-top: 24px; flex-wrap: wrap; }
+/* ─── タブ（下部固定）#10 fix ────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 5px;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 8px 12px 16px;
+  background: rgba(250,250,250,0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+@media (prefers-color-scheme: dark) {
+  .tabs { background: rgba(17,17,17,0.96); }
+}
 .tab {
-  flex: 1; min-width: 56px;
-  padding: 7px 4px;
+  flex: 1;
+  padding: 9px 4px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: transparent;
-  font-size: 12px; color: var(--text-muted);
+  font-size: 13px; color: var(--text-muted);
   cursor: pointer; transition: all 0.15s;
 }
 .tab.active {
@@ -204,29 +221,12 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
-.typing-dot.off {
-  background: var(--border);
-}
-.typing-dot.on {
-  background: var(--purple);
-}
-.typing-dot:hover {
-  transform: scale(1.2);
-  opacity: 0.85;
-}
-.typing-dot:active {
-  transform: scale(0.88);
-}
-
-/* 正解表示: 打ち忘れ(緑) / 余分(赤) */
-.typing-dot.dot-missed {
-  background: var(--teal) !important;
-  box-shadow: 0 0 0 2px var(--teal);
-}
-.typing-dot.dot-extra {
-  background: var(--coral) !important;
-  box-shadow: 0 0 0 2px var(--coral);
-}
+.typing-dot.off { background: var(--border); }
+.typing-dot.on  { background: var(--purple); }
+.typing-dot:hover  { transform: scale(1.2); opacity: 0.85; }
+.typing-dot:active { transform: scale(0.88); }
+.typing-dot.dot-missed { background: var(--teal)  !important; box-shadow: 0 0 0 2px var(--teal); }
+.typing-dot.dot-extra  { background: var(--coral) !important; box-shadow: 0 0 0 2px var(--coral); }
 
 /* ─── 点字グリッド（読むモード） ────────────────────────────────────── */
 .braille-wrapper {
@@ -247,7 +247,6 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
-.braille-row.centered { justify-content: center; }
 
 .scroll-indicator {
   position: absolute;
@@ -305,8 +304,16 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
 .feedback-icon { font-size: 56px; line-height: 1; margin-bottom: 6px; animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
 .feedback-icon.shake-it { animation: shake 0.4s ease; }
 .feedback-msg  { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-.feedback-correct { font-size: 13px; color: var(--text-muted); }
+.feedback-correct { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
 .mascot { font-size: 42px; margin-top: 8px; animation: popIn 0.5s 0.1s both cubic-bezier(0.175,0.885,0.32,1.275); }
+
+/* #13 fix: 不正解時の正しい点字表示エリア */
+.feedback-braille {
+  justify-content: center;
+  margin: 6px auto 4px;
+  min-height: 0;
+}
+.feedback-braille:empty { display: none; }
 
 /* ─── 入力エリア（読むモード） ───────────────────────────────────────── */
 .input-area { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -348,10 +355,10 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
   font-size: 14px; color: var(--text);
   cursor: pointer; transition: all 0.15s;
 }
-.btn:active       { transform: scale(0.97); }
-.btn-next         { border-color: var(--purple); color: var(--purple); font-weight: 600; }
-.btn-retry        { border-color: var(--teal);   color: var(--teal);   font-weight: 600; }
-.btn-wrong-only   { border-color: var(--coral);  color: var(--coral); }
+.btn:active     { transform: scale(0.97); }
+.btn-next       { border-color: var(--purple); color: var(--purple); font-weight: 600; }
+.btn-retry      { border-color: var(--teal);   color: var(--teal);   font-weight: 600; }
+.btn-wrong-only { border-color: var(--coral);  color: var(--coral); }
 
 /* ─── 結果画面 ───────────────────────────────────────────────────────── */
 .result { text-align: center; padding: 20px 12px; }
