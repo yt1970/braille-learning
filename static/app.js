@@ -454,14 +454,14 @@ function showFeedbackWithBraille(displayText, item) {
   fb.className = 'feedback wrong-fb';
   icon.textContent = '❌'; icon.className = 'feedback-icon shake-it';
   msg.textContent  = pick(WRONG_MSGS); msg.style.color = 'var(--coral)';
-  corr.textContent = `正解「${displayText}」の点字（読む向き）:`;
+  corr.textContent = `正解「${displayText}」の点字（打つ向き）:`;
   masc.textContent = pick(WRONG_MASCOTS);
 
-  // 正しい点字を読む向きで表示
+  // #13 fix: 打つ向き（左右反転・逆順）で表示 → ユーザーが打ったマスと直接照合できる
   if (brailleAnswer) {
     brailleAnswer.innerHTML = '';
-    const readingCells = getReadingCells(item);
-    readingCells.forEach(g => renderDot(g, brailleAnswer, false));
+    const typingCells = getTypingCells(item);
+    typingCells.forEach(g => renderDot(g, brailleAnswer, false));
   }
 }
 
