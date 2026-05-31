@@ -32,8 +32,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #fafafa; min-height: 100vh; }
 
-/* #10 fix: タブ分の余白を下に確保 */
-.app { max-width: 420px; margin: 0 auto; padding: 16px 12px 88px; }
+/* #10 fix: bottom-bar（入力欄+タブ）分の余白を確保 */
+.app { max-width: 420px; margin: 0 auto; padding: 16px 12px 160px; }
 
 .app-title {
   text-align: center;
@@ -74,23 +74,36 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
   .mode-btn.active { background: #2c2c2e; }
 }
 
-/* ─── タブ（下部固定）#10 fix ────────────────────────────────────────── */
-.tabs {
-  display: flex;
-  gap: 5px;
+/* ─── 下部固定バー（入力欄 + 次へ + タブをまとめて固定）#10 fix ── */
+.bottom-bar {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   max-width: 420px;
   margin: 0 auto;
-  padding: 8px 12px 16px;
-  background: rgba(250,250,250,0.96);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(250,250,250,0.97);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
   z-index: 100;
+  padding: 8px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 @media (prefers-color-scheme: dark) {
-  .tabs { background: rgba(17,17,17,0.96); }
+  .bottom-bar { background: rgba(17,17,17,0.97); }
+}
+
+/* タブは bottom-bar 内なので fixed 不要 */
+.tabs {
+  display: flex;
+  gap: 5px;
+  position: static;
+  padding: 0;
+  background: transparent;
+  border-top: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .tab {
   flex: 1;
@@ -316,7 +329,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: #faf
 .feedback-braille:empty { display: none; }
 
 /* ─── 入力エリア（読むモード） ───────────────────────────────────────── */
-.input-area { display: flex; gap: 8px; margin-bottom: 10px; }
+.input-area { display: flex; gap: 8px; margin-bottom: 0; }
 .answer-input {
   flex: 1; padding: 12px 14px;
   border: 1.5px solid var(--border);

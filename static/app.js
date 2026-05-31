@@ -179,11 +179,26 @@ function getWordCells(text) {
   return cells;
 }
 
-// #11 fix: 読む順グリッドを逆順にしてから mirrorGrid
-// → UI上は左端が「最後に打つマス」、右端が「最初に打つマス」
+// 打つ向きグリッド配列を返す
+// 点字台は読む面の裏面なので左右が反転し、かつ打つ順は右→左（読む順の逆）
+// UI上は左→右に並べるが「左端=最後に打つ・右端=最初に打つ」
+// #16 fix: 拗音の prefix/base の順序を保ちつつ全体を逆順にする
 function getTypingCells(item) {
   const reading = getReadingCells(item);
+  // 逆順（右端が最初に打つマス）にしてから各マスを左右反転
   return [...reading].reverse().map(mirrorGrid);
+}
+
+// #16 fix: 拗音のタグ判定を値比較に変更（参照比較だと pts([4]) は毎回新オブジェクトで常にfalse）
+function getYouonTagText(item) {
+  const e = YOUON_MAP[item.key];
+  if (!e) return '点字（拗音）';
+  const p = e.prefix;
+  const has5 = p[1][1] === 1; // 5点 = 右中
+  const has6 = p[2][1] === 1; // 6点 = 右下
+  if (has5) return '点字（濁音の拗音）';
+  if (has6) return '点字（半濁音の拗音）';
+  return '点字（拗音）';
 }
 
 // ══════════════════════════════════════════════════════
@@ -200,6 +215,8 @@ function renderCard() {
   updateProgress();
   hideFeedback();
   document.getElementById('btn-next-row').style.display = 'none';
+  // #10 fix: 読むモードは入力欄・次へボタンを画面下部固定エリアに移動済み
+  // キーボード出現時も点字が隠れないよう input-area は card の外に出す
   document.getElementById('input-area').style.display = '';
   document.getElementById('braille-wrapper').style.display = '';
   document.getElementById('typing-char').classList.add('hidden');
@@ -231,11 +248,7 @@ function renderCard() {
     tag.textContent = '点字（特殊符号）';
     renderBraille(braille, item.cells);
   } else if (item.type === 'youon') {
-    const e = YOUON_MAP[item.key];
-    tag.textContent = !e         ? '点字（拗音）'
-      : e.prefix === pts([4])   ? '点字（拗音）'
-      : e.prefix === pts([4,5]) ? '点字（濁音の拗音）'
-      :                           '点字（半濁音の拗音）';
+    tag.textContent = getYouonTagText(item);
     renderYouon(braille, item.key);
   } else if (item.type === 'word') {
     tag.textContent = '単語（中級）';
@@ -379,15 +392,8 @@ function checkTypingAnswer() {
     } else {
       allCorrect = false;
       cellEl.classList.add('cell-wrong');
-      dots.forEach(d => {
-        const r = +d.dataset.row, c = +d.dataset.col;
-        const shouldOn = expected[r][c] === 1;
-        const wasOn    = userGrid[r][c]  === 1;
-        d.classList.remove('on','off');
-        d.classList.add(shouldOn ? 'on' : 'off');
-        if ( shouldOn && !wasOn) d.classList.add('dot-missed');
-        if (!shouldOn &&  wasOn) d.classList.add('dot-extra');
-      });
+      // #17 fix: ユーザーの入力ドットを上書きしない → 着色のみ（dot-missed/dot-extra クラスを除去）
+      // マス自体の cell-wrong 着色はそのまま。フィードバック下の点字マスで正解を示す。
     }
     cellEl.querySelectorAll('.typing-dot').forEach(d => d.style.pointerEvents = 'none');
   });
