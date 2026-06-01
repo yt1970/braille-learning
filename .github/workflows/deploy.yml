@@ -3,6 +3,11 @@ name: Deploy to AWS ECS
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'static/**'
+      - 'main.py'
+      - 'Dockerfile'
+      - 'requirements.txt'
 
 env:
   AWS_REGION: ap-northeast-1

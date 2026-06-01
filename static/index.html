@@ -10,71 +10,71 @@
 <div class="app">
   <h1 class="app-title">点字を学ぼう</h1>
 
-  <!-- 読む / 打つ 切替 -->
-  <div class="mode-row">
-    <button class="mode-btn active" id="mode-read" onclick="switchInputMode('read')">👁 読む</button>
-    <button class="mode-btn" id="mode-type" onclick="switchInputMode('type')">✋ 打つ</button>
-  </div>
-
-  <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
-
-  <div class="stats">
-    <div class="stat"><div class="stat-num" id="stat-cur">1</div><div class="stat-label">現在</div></div>
-    <div class="stat"><div class="stat-num correct" id="stat-right">0</div><div class="stat-label">正解</div></div>
-    <div class="stat"><div class="stat-num wrong" id="stat-wrong">0</div><div class="stat-label">不正解</div></div>
-  </div>
-
-  <div class="card" id="card">
-    <div class="card-tag" id="card-tag">点字</div>
-
-    <!-- 読むモード: 点字表示 -->
-    <div class="braille-wrapper" id="braille-wrapper">
-      <div class="braille-row" id="braille-display"></div>
-      <div class="scroll-indicator hidden" id="scroll-indicator">右へスクロール ➔</div>
+  <div class="content">
+    <!-- 読む / 打つ 切替 -->
+    <div class="mode-row">
+      <button class="mode-btn active" id="mode-read" onclick="switchInputMode('read')">👁 読む</button>
+      <button class="mode-btn" id="mode-type" onclick="switchInputMode('type')">✋ 打つ</button>
     </div>
 
-    <!-- 打つモード: 文字表示 -->
-    <div class="typing-char hidden" id="typing-char"></div>
+    <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
 
-    <div class="card-sub" id="card-sub"></div>
-  </div>
+    <div class="card" id="card">
+      <div class="card-tag" id="card-tag">点字</div>
 
-  <!-- 打つモード: 点字入力エリア -->
-  <div class="typing-area hidden" id="typing-area">
-    <div class="typing-dir">
-      <span class="typing-dir-arrow">←</span> 右から左に打ちます
+      <!-- 読むモード: 点字表示 -->
+      <div class="braille-wrapper" id="braille-wrapper">
+        <div class="braille-row" id="braille-display"></div>
+        <div class="scroll-indicator hidden" id="scroll-indicator">右へスクロール ➔</div>
+      </div>
+
+      <!-- 打つモード: 文字表示 -->
+      <div class="typing-char hidden" id="typing-char"></div>
+
+      <div class="card-sub" id="card-sub"></div>
     </div>
-    <div class="typing-cells-row" id="typing-cells"></div>
-    <button class="btn-check" onclick="checkAnswer()">確認 ✓</button>
-  </div>
 
-  <!-- 正誤フィードバック -->
-  <!-- #13: feedback-braille を追加（不正解時に正しい点字を読む向きで表示） -->
-  <div class="feedback hidden" id="feedback">
-    <div class="feedback-icon" id="feedback-icon"></div>
-    <div class="feedback-msg" id="feedback-msg"></div>
-    <div class="feedback-correct" id="feedback-correct"></div>
-    <div class="feedback-braille braille-row" id="feedback-braille"></div>
-    <div class="mascot" id="mascot"></div>
-  </div>
-
-  <!-- 結果画面 -->
-  <div class="result hidden" id="result">
-    <div class="result-emoji" id="result-emoji">🎉</div>
-    <div class="result-title" id="result-title">おつかれさま！</div>
-    <div class="result-sub" id="result-sub"></div>
-    <div class="result-score-wrap">
-      <div class="result-score" id="result-score">0%</div>
-      <div class="result-score-label">正解率</div>
+    <!-- 打つモード: 点字入力エリア -->
+    <div class="typing-area hidden" id="typing-area">
+      <div class="typing-dir">
+        <span class="typing-dir-arrow">←</span> 右から左に打ちます
+      </div>
+      <div class="typing-cells-row" id="typing-cells"></div>
+      <button class="btn-check" onclick="checkAnswer()">確認 ✓</button>
     </div>
-    <div class="result-btns">
-      <button class="btn btn-retry" onclick="restart(false)">もう一度</button>
-      <button class="btn btn-wrong-only" onclick="restart(true)">不正解のみ</button>
+
+    <!-- 正誤フィードバック -->
+    <!-- #13: feedback-braille を追加（不正解時に正しい点字を読む向きで表示） -->
+    <div class="feedback hidden" id="feedback">
+      <div class="feedback-icon" id="feedback-icon"></div>
+      <div class="feedback-msg" id="feedback-msg"></div>
+      <div class="feedback-correct" id="feedback-correct"></div>
+      <div class="feedback-braille braille-row" id="feedback-braille"></div>
+      <div class="mascot" id="mascot"></div>
+    </div>
+
+    <!-- 結果画面 -->
+    <div class="result hidden" id="result">
+      <div class="result-emoji" id="result-emoji">🎉</div>
+      <div class="result-title" id="result-title">おつかれさま！</div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="result-score-wrap">
+        <div class="result-score" id="result-score">0%</div>
+        <div class="result-score-label">正解率</div>
+      </div>
+      <div class="result-btns">
+        <button class="btn btn-retry" onclick="restart(false)">もう一度</button>
+        <button class="btn btn-wrong-only" onclick="restart(true)">不正解のみ</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="stat-cur">1</div><div class="stat-label">現在</div></div>
+      <div class="stat"><div class="stat-num correct" id="stat-right">0</div><div class="stat-label">正解</div></div>
+      <div class="stat"><div class="stat-num wrong" id="stat-wrong">0</div><div class="stat-label">不正解</div></div>
     </div>
   </div>
 
-  <!-- #10 fix: 入力エリア・次へボタンをタブと同じ下部固定エリアに配置 -->
-  <!-- キーボード出現時も点字カードが隠れない -->
   <div class="bottom-bar">
     <div class="input-area" id="input-area">
       <input type="text" id="answer-input" class="answer-input" placeholder="" autocomplete="off" autocapitalize="none">
