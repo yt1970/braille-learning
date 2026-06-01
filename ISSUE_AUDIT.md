@@ -1,5 +1,5 @@
 # braille-learning Issue管理台帳
-更新日: 2026-06-01
+更新日: 2026-06-02
 
 ## 目的
 
@@ -39,6 +39,42 @@ AI Action: IGNORE
 - 得点表示を下部バー側に移動した
 - 読むモードで本文だけをスクロールできる構成にした
 - `deploy.yml` の `paths` 条件を維持して、UI系の更新だけで無駄なデプロイが走る状態を避けた
+
+---
+
+### #24 読むモードの読みの誤り
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`, `static/app.js`
+
+判定メモ:
+- `適者生存` の読みを `テキシャセイゾン` に修正した
+- `WORDS` の中級語彙データを更新済み
+
+---
+
+### #25 読みモードの読み方の点字の間違い
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`, `static/app.js`
+
+判定メモ:
+- `単刀直入` の読みは `タントウチョクニュウ` で、`チョ` は `4 + 2-3-4-5` の組合せで表示される
+- `YOUON_MAP` の `チョ` を正しいた行ベースに修正済み
+
+---
+
+### #26 中級のレベルアップ
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`
+
+判定メモ:
+- `WORDS` に形容詞、カタカナ語、和製英語、長音を含む語を追加した
+- `コーヒー`、`アイスコーヒー`、`ワンピース`、`サトー` など、長音の練習になる語を含めた
 
 ---
 

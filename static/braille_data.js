@@ -146,6 +146,22 @@ const WORDS = [
   {text:'ビャク',   meaning:'白'},    {text:'ピョン',   meaning:'ぴょん'},
   {text:'ショウ',   meaning:'賞'},    {text:'チャイ',   meaning:'チャイ'},
   {text:'シュッシャ',meaning:'出社'}, {text:'キョカ',   meaning:'許可'},
+  // #26 拡張: 形容詞・カタカナ語・和製英語・長音を含む語
+  {text:'オーキイ',         meaning:'大きい'},     {text:'チイサイ',     meaning:'小さい'},
+  {text:'タノシイ',         meaning:'楽しい'},     {text:'ウレシイ',     meaning:'うれしい'},
+  {text:'ヤサシイ',         meaning:'やさしい'},   {text:'アタラシイ',   meaning:'新しい'},
+  {text:'オモシロイ',       meaning:'面白い'},     {text:'コーヒー',     meaning:'コーヒー'},
+  {text:'ケーキ',           meaning:'ケーキ'},     {text:'ゲーム',       meaning:'ゲーム'},
+  {text:'メール',           meaning:'メール'},     {text:'スプーン',     meaning:'スプーン'},
+  {text:'コンピュータ',     meaning:'コンピュータ'},{text:'パソコン',     meaning:'パソコン'},
+  {text:'スマホ',           meaning:'スマホ'},     {text:'シャーペン',   meaning:'シャーペン'},
+  {text:'アイスコーヒー',   meaning:'アイスコーヒー'},{text:'ホットケーキ',meaning:'ホットケーキ'},
+  {text:'サトー',           meaning:'佐藤'},       {text:'リモコン',     meaning:'リモコン'},
+  {text:'ワンピース',       meaning:'ワンピース'},{text:'セーター',     meaning:'セーター'},
+  {text:'バター',           meaning:'バター'},     {text:'テレビ',       meaning:'テレビ'},
+  {text:'エアコン',         meaning:'エアコン'},   {text:'アルバム',     meaning:'アルバム'},
+  {text:'スカート',         meaning:'スカート'},   {text:'プレゼント',   meaning:'プレゼント'},
+  {text:'パンケーキ',       meaning:'パンケーキ'},{text:'シャンプー',   meaning:'シャンプー'},
 ];
 
 // 四字熟語
@@ -167,7 +183,7 @@ const IDIOMS = [
   {text:'ジキュウジソク',   meaning:'自給自足'},   {text:'シュウシイッカン', meaning:'終始一貫'},
   {text:'ショシカンテツ',   meaning:'初志貫徹'},   {text:'セッサタクマ',     meaning:'切磋琢磨'},
   {text:'センペンバンカ',   meaning:'千変万化'},   {text:'ダイドウショウイ', meaning:'大同小異'},
-  {text:'テキシャセイブン', meaning:'適者生存'},   {text:'テットウテツビ',   meaning:'徹頭徹尾'},
+  {text:'テキシャセイゾン', meaning:'適者生存'},   {text:'テットウテツビ',   meaning:'徹頭徹尾'},
   {text:'テンシンランマン', meaning:'天真爛漫'},   {text:'バジトウフ',       meaning:'馬耳東風'},
   {text:'ハクランキョウキ', meaning:'博覧強記'},   {text:'ハランバンジョウ', meaning:'波乱万丈'},
   {text:'ハンシンハンギ',   meaning:'半信半疑'},   {text:'ヒャッカリョウラン',meaning:'百花繚乱'},
