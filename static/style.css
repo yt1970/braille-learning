@@ -30,6 +30,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+.hidden { display: none !important; }
 body {
   font-family: -apple-system, 'Hiragino Sans', sans-serif;
   background: #fafafa;
@@ -94,7 +95,7 @@ body {
   .mode-btn.active { background: #2c2c2e; }
 }
 
-/* ─── 下部バー（入力欄 + 得点 + 次へ + タブ） ──────────────────────── */
+/* ─── 下部バー（得点 + 次へ + タブ） ──────────────────────────────── */
 .bottom-bar {
   flex: 0 0 auto;
   background: rgba(250,250,250,0.97);
@@ -253,6 +254,16 @@ body {
   margin-bottom: 4px;
 }
 
+/* ─── 読むモード: 入力エリア ─────────────────────────────────────────── */
+.input-area {
+  width: 100%;
+  align-self: stretch;
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
 /* ─── 打つセル ───────────────────────────────────────────────────────── */
 .typing-cell {
   border: 2px dashed var(--border);
@@ -373,7 +384,6 @@ body {
 .feedback-braille:empty { display: none; }
 
 /* ─── 入力エリア（読むモード） ───────────────────────────────────────── */
-.input-area { display: flex; gap: 8px; margin-bottom: 0; }
 .answer-input {
   flex: 1; padding: 12px 14px;
   border: 1.5px solid var(--border);

@@ -35,6 +35,7 @@ AI Action: IGNORE
 根拠: `static/index.html`, `static/style.css`, `.github/workflows/deploy.yml`
 
 判定メモ:
+- 読むモードの入力欄を点字表示の直下に移動した
 - 得点表示を下部バー側に移動した
 - 読むモードで本文だけをスクロールできる構成にした
 - `deploy.yml` の `paths` 条件を維持して、UI系の更新だけで無駄なデプロイが走る状態を避けた
@@ -260,7 +261,6 @@ AI Action: IGNORE
 ## 次回実施タスク
 
 優先度A:
-- `#19` の反映確認
 - `#3` 学習進捗のlocalStorage保存を実装
 - `#5` 数字・記号の追加を実装
 
