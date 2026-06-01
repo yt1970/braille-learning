@@ -42,6 +42,54 @@ AI Action: IGNORE
 
 ---
 
+### #23 読むモードのタ行の誤り
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`, `static/app.js`
+
+判定メモ:
+- `チ` の清音マップは `1-2-3-5` で一致
+- た行の拗音は `チャ/チュ/チョ` を `4 + 1-3-5 / 1-3-4-5 / 2-3-4-5` に修正
+
+---
+
+### #22 読むモードの回答誤り
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`, `static/app.js`
+
+判定メモ:
+- `チャイ` などの拗音を `YOUON_MAP` で正しい 2 マス構成に修正
+- `renderWordBraille()` と `getWordCells()` の両方で同じ規則を使うため、読む/打つで齟齬が出ない
+
+---
+
+### #21 打つモードの解答誤り
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`, `static/app.js`
+
+判定メモ:
+- `チ` の判定は `SEION['チ']` の `1-2-3-5` で維持
+- `チュ` などの拗音は `YOUON_MAP` の base をた行に戻して、打つ向きの採点とも一致させた
+
+---
+
+### #20 打つ方の点字領域の不足
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/style.css`
+
+判定メモ:
+- `typing-cells-row` を左起点にして横スクロール時の見切れを防止
+- 幅を `100%` にして、長文でも左端が切れにくいようにした
+
+---
+
 ### #18 出題のランダム化
 
 Status: DONE

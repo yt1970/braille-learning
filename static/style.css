@@ -246,12 +246,14 @@ body {
 .typing-cells-row {
   display: flex;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-end;
   flex-wrap: nowrap;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 2px 10px;
+  width: 100%;
+  padding: 4px 8px 10px;
   margin-bottom: 4px;
+  scroll-padding-inline: 8px;
 }
 
 /* ─── 読むモード: 入力エリア ─────────────────────────────────────────── */

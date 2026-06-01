@@ -334,6 +334,10 @@ function renderTypingCard() {
     }
     container.appendChild(cell);
   });
+
+  requestAnimationFrame(() => {
+    container.scrollLeft = container.scrollWidth;
+  });
 }
 
 // ══════════════════════════════════════════════════════

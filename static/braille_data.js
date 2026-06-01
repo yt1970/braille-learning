@@ -53,7 +53,7 @@ const YOUON_PREFIX   = pts([4]);
 //   半濁音の拗音: 2マス = [拗音符+半濁音符(4+6点を1マスに合成)] + [清音]
 //
 // ※ prefix は「1マスのグリッド」として直接渡す（pts()で生成済み）
-// ※ チャ・チュ・チョ は カ・ク・コ ベース（タ行ではない）
+// ※ チャ・チュ・チョ は た行ベース（点字は 4点 + た/つ/と のマス）
 
 const YOUON_MAP = {
   // ── 清音拗音（拗音符 4点 のみ = 1マス目） ──
@@ -63,9 +63,9 @@ const YOUON_MAP = {
   'シャ': { prefix: pts([4]),   base: 'サ' },
   'シュ': { prefix: pts([4]),   base: 'ス' },
   'ショ': { prefix: pts([4]),   base: 'ソ' },
-  'チャ': { prefix: pts([4]),   base: 'カ' }, // カ行ベース
-  'チュ': { prefix: pts([4]),   base: 'ク' },
-  'チョ': { prefix: pts([4]),   base: 'コ' },
+  'チャ': { prefix: pts([4]),   base: 'タ' }, // CyberLibrarian / MEXT: 4 + 1-3-5
+  'チュ': { prefix: pts([4]),   base: 'ツ' }, // CyberLibrarian / MEXT: 4 + 1-3-4-5
+  'チョ': { prefix: pts([4]),   base: 'ト' }, // CyberLibrarian / MEXT: 4 + 2-3-4-5
   'ニャ': { prefix: pts([4]),   base: 'ナ' },
   'ニュ': { prefix: pts([4]),   base: 'ヌ' },
   'ニョ': { prefix: pts([4]),   base: 'ノ' },
