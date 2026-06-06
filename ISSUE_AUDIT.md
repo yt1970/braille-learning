@@ -1,5 +1,5 @@
 # braille-learning Issue管理台帳
-更新日: 2026-06-02
+更新日: 2026-06-06
 
 ## 目的
 
@@ -28,6 +28,53 @@ AI Action: IMPLEMENT / REVIEW / IGNORE
 
 ## Issue一覧
 
+### #28 メニュー画面の追加
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/index.html`, `static/style.css`, `static/app.js`
+
+判定メモ:
+- 起動時にメニュー画面（`#menu-screen`）を表示し、モード（読む/打つ）とレベル（初級/中級/四字熟語/数字/記号/アルファベット/漢数字熟語）を選択してからスタートできるようにした
+- 出題画面（`#quiz-screen`）にはヘッダーに「← メニュー」ボタン、現在のモード・レベルのバッジを表示
+- タブ切替UIを出題画面から削除し、メニュー選択に一本化
+- 読むモードの確認ボタンを入力フィールド下段・中央配置に変更（#28 副次対応）
+- 結果画面に「メニューへ」ボタンを追加
+
+---
+
+### #27 アルファベット・漢数字熟語の追加
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`, `static/index.html`, `static/app.js`
+
+判定メモ:
+- `ALPHABETS`（A〜Z 26語）を `braille_data.js` に追加
+- `ALPHA_PATTERNS`（アルファベット符6点 + 英字パターン）を実装
+- `KANJI_YOJIJUKUGO`（漢数字を含む四字熟語 24語）を追加
+- メニューに「アルファベット」「漢数字熟語」タブを追加
+- `buildDeck()`・`renderCard()`・`renderTypingCard()`・`getReadingCells()` に対応ロジックを追加
+- アルファベット符（`ALPHA_PREFIX`）は緑色（`.dot.alpha`）で表示
+
+---
+
+### #5 数字・句読点・記号の追加
+
+Status: DONE
+AI Action: IGNORE
+根拠: `static/braille_data.js`, `static/index.html`, `static/app.js`
+
+判定メモ:
+- `NUMBER_PATTERNS`（0〜9）、`SUUFU_PREFIX`（数符 3456点）を `braille_data.js` に追加
+- `PUNCTUATION_ITEMS`（句点・読点・感嘆符・疑問符・始め括弧・終わり括弧）を追加
+- 数符はオレンジ色（`.dot.suufu`）で表示して視覚的に区別できるようにした
+- メニューに「数字」「記号」タブを追加
+- `buildDeck()`・`renderCard()`・`renderTypingCard()`・`getReadingCells()` に数字・記号の出題ロジックを追加
+- `getAnswerKeys()` に `number` / `punct` / `alpha` / `kanji_idiom` の分岐を追加
+
+---
+
 ### #19 【至急修正】UIの改修不十分
 
 Status: DONE
@@ -38,7 +85,6 @@ AI Action: IGNORE
 - 読むモードの入力欄を点字表示の直下に移動した
 - 得点表示を下部バー側に移動した
 - 読むモードで本文だけをスクロールできる構成にした
-- `deploy.yml` の `paths` 条件を維持して、UI系の更新だけで無駄なデプロイが走る状態を避けた
 
 ---
 
@@ -50,7 +96,6 @@ AI Action: IGNORE
 
 判定メモ:
 - `適者生存` の読みを `テキシャセイゾン` に修正した
-- `WORDS` の中級語彙データを更新済み
 
 ---
 
@@ -61,7 +106,6 @@ AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`
 
 判定メモ:
-- `単刀直入` の読みは `タントウチョクニュウ` で、`チョ` は `4 + 2-3-4-5` の組合せで表示される
 - `YOUON_MAP` の `チョ` を正しいた行ベースに修正済み
 
 ---
@@ -74,7 +118,6 @@ AI Action: IGNORE
 
 判定メモ:
 - `WORDS` に形容詞、カタカナ語、和製英語、長音を含む語を追加した
-- `コーヒー`、`アイスコーヒー`、`ワンピース`、`サトー` など、長音の練習になる語を含めた
 
 ---
 
@@ -85,8 +128,7 @@ AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`
 
 判定メモ:
-- `チ` の清音マップは `1-2-3-5` で一致
-- た行の拗音は `チャ/チュ/チョ` を `4 + 1-3-5 / 1-3-4-5 / 2-3-4-5` に修正
+- た行の拗音 `チャ/チュ/チョ` を `4 + 1-3-5 / 1-3-4-5 / 2-3-4-5` に修正
 
 ---
 
@@ -96,10 +138,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`
 
-判定メモ:
-- `チャイ` などの拗音を `YOUON_MAP` で正しい 2 マス構成に修正
-- `renderWordBraille()` と `getWordCells()` の両方で同じ規則を使うため、読む/打つで齟齬が出ない
-
 ---
 
 ### #21 打つモードの解答誤り
@@ -107,10 +145,6 @@ AI Action: IGNORE
 Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`
-
-判定メモ:
-- `チ` の判定は `SEION['チ']` の `1-2-3-5` で維持
-- `チュ` などの拗音は `YOUON_MAP` の base をた行に戻して、打つ向きの採点とも一致させた
 
 ---
 
@@ -120,10 +154,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/style.css`
 
-判定メモ:
-- `typing-cells-row` を左起点にして横スクロール時の見切れを防止
-- 幅を `100%` にして、長文でも左端が切れにくいようにした
-
 ---
 
 ### #18 出題のランダム化
@@ -131,10 +161,6 @@ AI Action: IGNORE
 Status: DONE
 AI Action: IGNORE
 根拠: `static/app.js`
-
-判定メモ:
-- `shuffle()` が実装されている
-- `restart()` で `deck = shuffle(source)` を実行している
 
 ---
 
@@ -144,10 +170,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/app.js`, `static/index.html`
 
-判定メモ:
-- 不正解時のフィードバックで入力ドットを上書きしていない
-- `feedback-braille` に正しい点字を別表示している
-
 ---
 
 ### #16 打つモードのチャ、チュ、チョの左のマスがおかしい
@@ -155,10 +177,6 @@ AI Action: IGNORE
 Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`
-
-判定メモ:
-- `YOUON_MAP` の `チャ/チュ/チョ` は `カ/ク/コ` ベースに修正済み
-- 打つ向きの変換で拗音の順序を保持している
 
 ---
 
@@ -168,10 +186,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`
 
-判定メモ:
-- `getTypingCells()` と `checkTypingAnswer()` で処理している
-- 拗音・濁音・半濁音を含む回答判定の基盤は修正済み
-
 ---
 
 ### #14 読むモードのヒント
@@ -179,10 +193,6 @@ AI Action: IGNORE
 Status: DONE
 AI Action: IGNORE
 根拠: `static/app.js`, `static/index.html`
-
-判定メモ:
-- `card-sub` を空表示にしている
-- `placeholder` を空に統一している
 
 ---
 
@@ -192,10 +202,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/app.js`, `static/index.html`
 
-判定メモ:
-- 不正解時に正しい点字を `feedback-braille` に打つ向きで表示している
-- `feedback-braille` 要素がHTMLに追加されている
-
 ---
 
 ### #12 濁音、半濁音、拗音、特殊音の表現
@@ -203,10 +209,6 @@ AI Action: IGNORE
 Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`
-
-判定メモ:
-- `DAKUON`, `HANDAKUON`, `YOUON_MAP`, `SPECIAL_ITEMS` がある
-- 拗濁音・拗半濁音は `pts([4,5])` / `pts([4,6])` で1マスに合成済み
 
 ---
 
@@ -216,10 +218,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/app.js`
 
-判定メモ:
-- `getTypingCells()` で右から打つ順序に変換している
-- マスの左右反転も含めて打つ向きが整理されている
-
 ---
 
 ### #10 UI、UXの改善2
@@ -227,10 +225,6 @@ AI Action: IGNORE
 Status: DONE
 AI Action: IGNORE
 根拠: `static/index.html`, `static/style.css`, `static/app.js`
-
-判定メモ:
-- 入力欄・次へボタン・タブが `.bottom-bar` として下部固定
-- スマホでキーボードが出ても点字表示が隠れない構成
 
 ---
 
@@ -240,10 +234,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/index.html`, `static/app.js`, `static/style.css`
 
-判定メモ:
-- 「読む / 打つ」切替がある
-- 打つモード用のUI・採点・フィードバックが実装されている
-
 ---
 
 ### #8 問題カテゴリーの細部
@@ -251,10 +241,6 @@ AI Action: IGNORE
 Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`, `static/index.html`
-
-判定メモ:
-- 初級 / 中級 / 四字熟語の3カテゴリ構成が実装されている
-- WORDS 90語、IDIOMS 80語でほぼ要件を達成
 
 ---
 
@@ -264,11 +250,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`, `static/index.html`
 
-判定メモ:
-- 3カテゴリ構成と横スクロールUIが実装されている
-- WORDS 90語、IDIOMS 80語でほぼ達成
-- 完全な100語達成は優先度Bタスクとして残す
-
 ---
 
 ### #6 UIの改善
@@ -277,21 +258,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/index.html`, `static/style.css`, `static/app.js`
 
-判定メモ:
-- タブと入力エリアが下部固定バーに収まっている
-
----
-
-### #5 数字・句読点・記号の追加
-
-Status: TODO
-AI Action: IMPLEMENT
-根拠: `static/braille_data.js`, `static/index.html`, `static/app.js`
-
-判定メモ:
-- `NUMBERS` / `PUNCTUATION` の実装は見当たらない
-- 数字・句読点・記号の学習UIも未追加
-
 ---
 
 ### #4 インターネット公開
@@ -299,11 +265,6 @@ AI Action: IMPLEMENT
 Status: DONE
 AI Action: IGNORE
 根拠: `.github/workflows/deploy.yml`, `Dockerfile`, `main.py`
-
-判定メモ:
-- AWS ECS Fargate でデプロイ済み
-- 公開URL: http://18.181.77.20:8000
-- GitHub Actions で自動デプロイ設定済み（アプリ関連ファイルのみ）
 
 ---
 
@@ -325,9 +286,6 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`
 
-判定メモ:
-- `WORDS` は 90 語ある（要件の50語を上回る）
-
 ---
 
 ### #1 拗音（キャ・シュ・チョなど）の追加
@@ -336,17 +294,12 @@ Status: DONE
 AI Action: IGNORE
 根拠: `static/braille_data.js`, `static/app.js`, `static/index.html`
 
-判定メモ:
-- `YOUON_MAP` がある
-- 読むモード / 打つモードの両方で拗音を扱っている
-
 ---
 
 ## 次回実施タスク
 
 優先度A:
 - `#3` 学習進捗のlocalStorage保存を実装
-- `#5` 数字・記号の追加を実装
 
 優先度B:
 - WORDS / IDIOMS を各100語に増やして #7/#8 を完全クローズ

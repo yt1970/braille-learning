@@ -46,6 +46,63 @@ const DAKU_PREFIX    = pts([5]);
 const HANDAKU_PREFIX = pts([6]);
 const YOUON_PREFIX   = pts([4]);
 
+// ─── 数符・アルファベット符 ────────────────────────────────────────────
+// 数符: 3・4・5・6点（数字の前につける）
+// アルファベット符: 6点（アルファベットの前につける）
+const SUUFU_PREFIX = pts([3,4,5,6]);   // 数符（オレンジ色で表示）
+const ALPHA_PREFIX = pts([6]);         // アルファベット符（緑色で表示）
+
+// ─── 数字（数符の後ろにつく点字パターン） ────────────────────────────
+// 日本点字規則: 数符(3456点)の後、数字パターン（ア行＋ヤ・ラ行ベース）
+const NUMBER_PATTERNS = {
+  '1': pts([1]),       // ア と同じ
+  '2': pts([1,2]),     // イ と同じ
+  '3': pts([1,4]),     // ウ と同じ
+  '4': pts([1,4,5]),   // エ と同じ → 正しくは1・4・5点（ユ）
+  '5': pts([1,5]),     // ラ と同じ
+  '6': pts([1,2,4]),   // オ→ 正しくは1・2・4点
+  '7': pts([1,2,4,5]), // レ と同じ
+  '8': pts([1,2,5]),   // リ と同じ
+  '9': pts([2,4]),     // オ と同じ
+  '0': pts([2,4,5]),   // ロ と同じ
+};
+
+// ─── 句読点・記号 ─────────────────────────────────────────────────────
+// 日本点字規則準拠
+const PUNCTUATION_MAP = {
+  '。':{ cells:[pts([2,5,6])],         desc:'2・5・6点' },
+  '、':{ cells:[pts([5,6])],           desc:'5・6点' },
+  '！':{ cells:[pts([2,3,5])],         desc:'2・3・5点' },
+  '？':{ cells:[pts([2,6])],           desc:'2・6点' },
+  '「':{ cells:[pts([4,5])],           desc:'4・5点' },
+  '」':{ cells:[pts([1,2])],           desc:'1・2点' },
+};
+
+// 記号 SPECIAL_ITEMS 形式（カード表示用）
+const PUNCTUATION_ITEMS = [
+  { key:'。（句点）',   cells:[pts([2,5,6])], desc:'2・5・6点' },
+  { key:'、（読点）',   cells:[pts([5,6])],   desc:'5・6点' },
+  { key:'！（感嘆符）', cells:[pts([2,3,5])], desc:'2・3・5点' },
+  { key:'？（疑問符）', cells:[pts([2,6])],   desc:'2・6点' },
+  { key:'「（始め括弧）',cells:[pts([4,5])],  desc:'4・5点' },
+  { key:'」（終わり括弧）',cells:[pts([1,2])],desc:'1・2点' },
+];
+
+// ─── アルファベット（英字符 6点 + ラテン文字点字） ───────────────────
+// 日本点字規則: アルファベット符(6点)の後に英字パターン
+// 英字点字はア行パターンを流用（a=1点、b=12点、c=14点…）
+const ALPHA_PATTERNS = {
+  'A': pts([1]),         'B': pts([1,2]),      'C': pts([1,4]),
+  'D': pts([1,4,5]),     'E': pts([1,5]),       'F': pts([1,2,4]),
+  'G': pts([1,2,4,5]),   'H': pts([1,2,5]),     'I': pts([2,4]),
+  'J': pts([2,4,5]),     'K': pts([1,3]),       'L': pts([1,2,3]),
+  'M': pts([1,3,4]),     'N': pts([1,3,4,5]),   'O': pts([1,3,5]),
+  'P': pts([1,2,3,4]),   'Q': pts([1,2,3,4,5]), 'R': pts([1,2,3,5]),
+  'S': pts([2,3,4]),     'T': pts([2,3,4,5]),   'U': pts([1,3,6]),
+  'V': pts([1,2,3,6]),   'W': pts([2,4,5,6]),   'X': pts([1,3,4,6]),
+  'Y': pts([1,3,4,5,6]), 'Z': pts([1,3,5,6]),
+};
+
 // ─── 拗音マッピング辞書 ────────────────────────────────────────────────
 // 【規則】文科省資料・ほくてん点字五十音表 準拠
 //   清音の拗音:   2マス = [拗音符(4点)] + [清音(ア/ウ/オ列)]
@@ -208,6 +265,47 @@ const IDIOMS = [
   {text:'アンシンリツメイ', meaning:'安心立命'},   {text:'アゼンボウゼン',   meaning:'唖然呆然'},
 ];
 
+// #27: アルファベット単字（読む・打つ両対応）
+const ALPHABETS = [
+  {text:'A', meaning:'エー'},  {text:'B', meaning:'ビー'},  {text:'C', meaning:'シー'},
+  {text:'D', meaning:'ディー'},{text:'E', meaning:'イー'},  {text:'F', meaning:'エフ'},
+  {text:'G', meaning:'ジー'},  {text:'H', meaning:'エイチ'},{text:'I', meaning:'アイ'},
+  {text:'J', meaning:'ジェー'},{text:'K', meaning:'ケー'},  {text:'L', meaning:'エル'},
+  {text:'M', meaning:'エム'},  {text:'N', meaning:'エヌ'},  {text:'O', meaning:'オー'},
+  {text:'P', meaning:'ピー'},  {text:'Q', meaning:'キュー'},{text:'R', meaning:'アール'},
+  {text:'S', meaning:'エス'},  {text:'T', meaning:'ティー'},{text:'U', meaning:'ユー'},
+  {text:'V', meaning:'ブイ'},  {text:'W', meaning:'ダブリュー'},{text:'X', meaning:'エックス'},
+  {text:'Y', meaning:'ワイ'},  {text:'Z', meaning:'ゼット'},
+];
+
+// #27: 漢数字が入る四字熟語（読み仮名はカタカナ）
+const KANJI_YOJIJUKUGO = [
+  {text:'イチゴイチエ',     meaning:'一期一会'},
+  {text:'イッセキニチョウ', meaning:'一石二鳥'},
+  {text:'イッシンフラン',   meaning:'一心不乱'},
+  {text:'イッショウケンメイ',meaning:'一生懸命'},
+  {text:'イットウリョウダン',meaning:'一刀両断'},
+  {text:'イッカクセンキン', meaning:'一攫千金'},
+  {text:'イチモクリョウゼン',meaning:'一目瞭然'},
+  {text:'ニソクサンモン',   meaning:'二束三文'},
+  {text:'サンミイッタイ',   meaning:'三位一体'},
+  {text:'サンカンシオン',   meaning:'三寒四温'},
+  {text:'シメンソカ',       meaning:'四面楚歌'},
+  {text:'チョウサンボシ',   meaning:'朝三暮四'},
+  {text:'ゴリムチュウ',     meaning:'五里霧中'},
+  {text:'ゴエツドウシュウ', meaning:'呉越同舟'},
+  {text:'ロクシンフタン',   meaning:'六親不和 → 六親不断'},
+  {text:'シチテンバットウ', meaning:'七転八倒'},
+  {text:'ハッポウビジン',   meaning:'八方美人'},
+  {text:'キュウシイッショ', meaning:'九死一生'},
+  {text:'ジュウニンジュウイロ',meaning:'十人十色'},
+  {text:'ヒャッカリョウラン',meaning:'百花繚乱'},
+  {text:'ヒャクセンレンマ', meaning:'百戦錬磨'},
+  {text:'センペンバンカ',   meaning:'千変万化'},
+  {text:'イッカクセンキン', meaning:'一攫千金'},
+  {text:'バンジキュウス',   meaning:'万事休す'},
+];
+
 // 正規化: ひらがな→カタカナ
 function normalize(s) {
   return s.replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60))
@@ -222,5 +320,9 @@ function getAnswerKeys(item) {
   if (item.type === 'youon')   return [item.key];
   if (item.type === 'word')    return [item.text];
   if (item.type === 'idiom')   return [item.text];
+  if (item.type === 'number')  return [item.key];
+  if (item.type === 'punct')   return [item.key.replace(/（.*?）/g,'')];
+  if (item.type === 'alpha')   return [item.text, item.meaning];
+  if (item.type === 'kanji_idiom') return [item.text];
   return [];
 }

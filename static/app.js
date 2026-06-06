@@ -3,31 +3,74 @@ const CORRECT_MASCOTS = ['🐱','🐶','🐰','🦊','🐻','🐼','🐨','🐸'
 const WRONG_MSGS      = ['惜しい！', 'もう一度！', '次は大丈夫！', 'ファイト！', '諦めないで！'];
 const WRONG_MASCOTS   = ['😢','😿','🥺','😖','💦'];
 
+// #28: メニューで選択した状態を保持
 let mode = 'shokyu', inputMode = 'read';
 let deck = [], idx = 0, right = 0, wrong = 0, retryDeck = [], answered = false;
 
+// ══════════════════════════════════════════════════════
+// #28: メニュー画面の制御
+// ══════════════════════════════════════════════════════
+
+function showMenu() {
+  document.getElementById('menu-screen').classList.remove('hidden');
+  document.getElementById('quiz-screen').classList.add('hidden');
+}
+
+function startQuiz() {
+  // メニューで選択中のモード・レベルを取得
+  const selectedMode = document.querySelector('.menu-mode-btn.active')?.dataset.mode || 'read';
+  const selectedLevel = document.querySelector('.menu-level-btn.active')?.dataset.level || 'shokyu';
+  inputMode = selectedMode;
+  mode = selectedLevel;
+
+  document.getElementById('menu-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+
+  // 出題画面の表示を更新
+  updateQuizHeader();
+  restart(false);
+}
+
+function updateQuizHeader() {
+  // 出題画面上部のモード・レベル表示バッジを更新
+  const modeLabelEl = document.getElementById('quiz-mode-label');
+  const levelLabelEl = document.getElementById('quiz-level-label');
+  if (modeLabelEl) modeLabelEl.textContent = inputMode === 'read' ? '👁 読むモード' : '✋ 打つモード';
+  const levelNames = { shokyu:'初級', chukyu:'中級', idiom:'四字熟語', number:'数字', kigo:'記号', alpha:'アルファベット', kanji_idiom:'漢数字熟語' };
+  if (levelLabelEl) levelLabelEl.textContent = levelNames[mode] || mode;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.tab').forEach(btn => {
-    btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+  // メニュー: モードボタン
+  document.querySelectorAll('.menu-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.menu-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
   });
+
+  // メニュー: レベルボタン
+  document.querySelectorAll('.menu-level-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.menu-level-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // スタートボタン
+  document.getElementById('btn-start').addEventListener('click', startQuiz);
+
+  // 出題画面: メニューに戻るボタン
+  document.getElementById('btn-back-menu').addEventListener('click', showMenu);
+
+  // 出題画面: Enterキー
   document.getElementById('answer-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') { if (!answered) checkAnswer(); else nextCard(); }
   });
-  switchMode('shokyu');
+
+  // 最初はメニュー画面を表示
+  showMenu();
 });
-
-function switchMode(m) {
-  mode = m;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
-  restart(false);
-}
-
-function switchInputMode(m) {
-  inputMode = m;
-  document.getElementById('mode-read').classList.toggle('active', m === 'read');
-  document.getElementById('mode-type').classList.toggle('active', m === 'type');
-  restart(false);
-}
 
 function buildDeck() {
   if (mode === 'shokyu') {
@@ -41,6 +84,22 @@ function buildDeck() {
   }
   if (mode === 'chukyu') return WORDS.map(w => ({ type: 'word',  text: w.text, meaning: w.meaning }));
   if (mode === 'idiom')  return IDIOMS.map(w => ({ type: 'idiom', text: w.text, meaning: w.meaning }));
+  // #5: 数字モード
+  if (mode === 'number') {
+    return Object.entries(NUMBER_PATTERNS).map(([k, v]) => ({ type: 'number', key: k, cell: v }));
+  }
+  // #5: 記号モード
+  if (mode === 'kigo') {
+    return PUNCTUATION_ITEMS.map(s => ({ type: 'punct', key: s.key, cells: s.cells, desc: s.desc }));
+  }
+  // #27: アルファベットモード
+  if (mode === 'alpha') {
+    return ALPHABETS.map(a => ({ type: 'alpha', text: a.text, meaning: a.meaning }));
+  }
+  // #27: 漢数字四字熟語モード
+  if (mode === 'kanji_idiom') {
+    return KANJI_YOJIJUKUGO.map(w => ({ type: 'kanji_idiom', text: w.text, meaning: w.meaning }));
+  }
   return [];
 }
 
@@ -57,12 +116,12 @@ function shuffle(a) {
 // 点字レンダリング（読むモード）
 // ══════════════════════════════════════════════════════
 
-function renderDot(grid, container, isPrefix = false) {
+function renderDot(grid, container, dotClass = 'on') {
   const cell = document.createElement('div');
   cell.className = 'braille-cell';
   grid.flat().forEach(v => {
     const d = document.createElement('div');
-    d.className = 'dot ' + (v ? (isPrefix ? 'prefix' : 'on') : 'off');
+    d.className = 'dot ' + (v ? dotClass : 'off');
     cell.appendChild(d);
   });
   container.appendChild(cell);
@@ -72,8 +131,8 @@ function renderDot(grid, container, isPrefix = false) {
 function appendYouon(container, key) {
   const entry = YOUON_MAP[key];
   if (!entry) return;
-  renderDot(entry.prefix, container, true);        // prefix は1マスのグリッド
-  if (SEION[entry.base]) renderDot(SEION[entry.base], container, false);
+  renderDot(entry.prefix, container, 'prefix');
+  if (SEION[entry.base]) renderDot(SEION[entry.base], container, 'on');
 }
 
 function renderYouon(container, key) {
@@ -81,10 +140,10 @@ function renderYouon(container, key) {
   appendYouon(container, key);
 }
 
-function renderBraille(container, cells, prefixGrid = null) {
+function renderBraille(container, cells, prefixGrid = null, prefixClass = 'prefix') {
   container.innerHTML = '';
-  if (prefixGrid) renderDot(prefixGrid, container, true);
-  cells.forEach(g => renderDot(g, container, false));
+  if (prefixGrid) renderDot(prefixGrid, container, prefixClass);
+  cells.forEach(g => renderDot(g, container, 'on'));
 }
 
 function renderWordBraille(container, text) {
@@ -97,15 +156,37 @@ function renderWordBraille(container, text) {
       if (YOUON_MAP[two]) { appendYouon(container, two); i += 2; continue; }
     }
     const ch = chars[i];
-    if      (SEION[ch])     { renderDot(SEION[ch], container, false); }
-    else if (DAKUON[ch])    { renderDot(DAKU_PREFIX, container, true);    renderDot(DAKUON[ch], container, false); }
-    else if (HANDAKUON[ch]) { renderDot(HANDAKU_PREFIX, container, true); renderDot(HANDAKUON[ch], container, false); }
+    if      (SEION[ch])     { renderDot(SEION[ch], container, 'on'); }
+    else if (DAKUON[ch])    { renderDot(DAKU_PREFIX, container, 'prefix');    renderDot(DAKUON[ch], container, 'on'); }
+    else if (HANDAKUON[ch]) { renderDot(HANDAKU_PREFIX, container, 'prefix'); renderDot(HANDAKUON[ch], container, 'on'); }
     else {
       const sp = SPECIAL_ITEMS.find(s => s.key.startsWith(ch));
-      if (sp) renderDot(sp.cells[0], container, false);
+      if (sp) renderDot(sp.cells[0], container, 'on');
     }
     i++;
   }
+}
+
+// #5: 数字の点字表示（数符 + 数字パターン）
+function renderNumberBraille(container, key) {
+  container.innerHTML = '';
+  renderDot(SUUFU_PREFIX, container, 'suufu');   // 数符（オレンジ）
+  const cell = NUMBER_PATTERNS[key];
+  if (cell) renderDot(cell, container, 'on');
+}
+
+// #5: 記号の点字表示
+function renderPunctBraille(container, cells) {
+  container.innerHTML = '';
+  cells.forEach(g => renderDot(g, container, 'on'));
+}
+
+// #27: アルファベットの点字表示（アルファベット符 + 英字パターン）
+function renderAlphaBraille(container, text) {
+  container.innerHTML = '';
+  renderDot(ALPHA_PREFIX, container, 'alpha');   // アルファベット符（緑）
+  const cell = ALPHA_PATTERNS[text.toUpperCase()];
+  if (cell) renderDot(cell, container, 'on');
 }
 
 function updateScrollIndicator() {
@@ -121,22 +202,12 @@ function updateScrollIndicator() {
 
 // ══════════════════════════════════════════════════════
 // 打つモード: グリッド変換
-// ──────────────────────────────────────────────────────
-// 【凸面（読む面）】左列=1・2・3点, 右列=4・5・6点
-// 【凹面（打つ面）】左右が鏡像。左列=4・5・6点, 右列=1・2・3点
-//   → 各マスを mirrorGrid で左右反転
-//
-// 【マスの並び順】
-//   読む方向: 左→右（1文字目が左端）
-//   打つ方向: 右→左（1文字目が右端）
-//   → #11 fix: UI上のマス配列を逆順にし、1文字目が右端に来るようにする
 // ══════════════════════════════════════════════════════
 
 function mirrorGrid(grid) {
   return grid.map(row => [row[1], row[0]]);
 }
 
-// 「読む順」のグリッド配列（左→右）
 function getReadingCells(item) {
   if (item.type === 'seion')   return [SEION[item.key]];
   if (item.type === 'daku')    return [DAKU_PREFIX, DAKUON[item.key]];
@@ -145,10 +216,15 @@ function getReadingCells(item) {
   if (item.type === 'youon') {
     const e = YOUON_MAP[item.key];
     if (!e) return [];
-    // prefix は1マスのグリッドなのでそのまま配列に入れる
     return [e.prefix, SEION[e.base]];
   }
-  if (item.type === 'word' || item.type === 'idiom') return getWordCells(item.text);
+  if (item.type === 'word' || item.type === 'idiom' || item.type === 'kanji_idiom') return getWordCells(item.text);
+  // #5: 数字
+  if (item.type === 'number') return [SUUFU_PREFIX, item.cell];
+  // #5: 記号
+  if (item.type === 'punct') return item.cells.slice();
+  // #27: アルファベット
+  if (item.type === 'alpha') return [ALPHA_PREFIX, ALPHA_PATTERNS[item.text.toUpperCase()]].filter(Boolean);
   return [];
 }
 
@@ -161,8 +237,8 @@ function getWordCells(text) {
       const two = chars[i] + chars[i + 1];
       if (YOUON_MAP[two]) {
         const e = YOUON_MAP[two];
-        cells.push(e.prefix);           // 1マス
-        cells.push(SEION[e.base]);      // 1マス
+        cells.push(e.prefix);
+        cells.push(SEION[e.base]);
         i += 2; continue;
       }
     }
@@ -179,23 +255,17 @@ function getWordCells(text) {
   return cells;
 }
 
-// 打つ向きグリッド配列を返す
-// 点字台は読む面の裏面なので左右が反転し、かつ打つ順は右→左（読む順の逆）
-// UI上は左→右に並べるが「左端=最後に打つ・右端=最初に打つ」
-// #16 fix: 拗音の prefix/base の順序を保ちつつ全体を逆順にする
 function getTypingCells(item) {
   const reading = getReadingCells(item);
-  // 逆順（右端が最初に打つマス）にしてから各マスを左右反転
   return [...reading].reverse().map(mirrorGrid);
 }
 
-// #16 fix: 拗音のタグ判定を値比較に変更（参照比較だと pts([4]) は毎回新オブジェクトで常にfalse）
 function getYouonTagText(item) {
   const e = YOUON_MAP[item.key];
   if (!e) return '点字（拗音）';
   const p = e.prefix;
-  const has5 = p[1][1] === 1; // 5点 = 右中
-  const has6 = p[2][1] === 1; // 6点 = 右下
+  const has5 = p[1][1] === 1;
+  const has6 = p[2][1] === 1;
   if (has5) return '点字（濁音の拗音）';
   if (has6) return '点字（半濁音の拗音）';
   return '点字（拗音）';
@@ -215,8 +285,6 @@ function renderCard() {
   updateProgress();
   hideFeedback();
   document.getElementById('btn-next-row').style.display = 'none';
-  // #10 fix: 読むモードは入力欄・次へボタンを画面下部固定エリアに移動済み
-  // キーボード出現時も点字が隠れないよう input-area は card の外に出す
   document.getElementById('input-area').style.display = '';
   document.getElementById('braille-wrapper').style.display = '';
   document.getElementById('typing-char').classList.add('hidden');
@@ -224,15 +292,12 @@ function renderCard() {
 
   const inp = document.getElementById('answer-input');
   inp.value = ''; inp.disabled = false; inp.className = 'answer-input';
-  // #14 fix: placeholder を空に統一
   inp.placeholder = '';
   inp.focus();
 
   const braille = document.getElementById('braille-display');
   const tag     = document.getElementById('card-tag');
   braille.scrollLeft = 0;
-
-  // #14 fix: card-sub（ヒント文）は表示しない → 空文字
   document.getElementById('card-sub').textContent = '';
 
   if (item.type === 'seion') {
@@ -255,6 +320,25 @@ function renderCard() {
     renderWordBraille(braille, item.text);
   } else if (item.type === 'idiom') {
     tag.textContent = '四字熟語';
+    renderWordBraille(braille, item.text);
+  } else if (item.type === 'number') {
+    // #5: 数字
+    tag.textContent = '点字（数字）';
+    renderNumberBraille(braille, item.key);
+    document.getElementById('card-sub').textContent = '※ 左のマスは数符（オレンジ）';
+  } else if (item.type === 'punct') {
+    // #5: 記号
+    tag.textContent = '点字（記号）';
+    renderPunctBraille(braille, item.cells);
+    document.getElementById('card-sub').textContent = item.desc || '';
+  } else if (item.type === 'alpha') {
+    // #27: アルファベット
+    tag.textContent = '点字（アルファベット）';
+    renderAlphaBraille(braille, item.text);
+    document.getElementById('card-sub').textContent = '※ 左のマスはアルファベット符（緑）';
+  } else if (item.type === 'kanji_idiom') {
+    // #27: 漢数字四字熟語
+    tag.textContent = '漢数字熟語';
     renderWordBraille(braille, item.text);
   }
 
@@ -307,9 +391,28 @@ function renderTypingCard() {
     tag.textContent = '打つ練習（四字熟語）';
     typingChar.innerHTML = `${item.text}<span class="typing-meaning">（${item.meaning}）</span>`;
     sub.textContent = `${readingN}マス（右から打つ）`;
+  } else if (item.type === 'number') {
+    // #5
+    tag.textContent = '打つ練習（数字）';
+    typingChar.textContent = item.key;
+    sub.textContent = `${readingN}マス（右から打つ）`;
+  } else if (item.type === 'punct') {
+    // #5
+    tag.textContent = '打つ練習（記号）';
+    typingChar.textContent = item.key.replace(/（.*?）/g, '');
+    sub.textContent = `${readingN}マス`;
+  } else if (item.type === 'alpha') {
+    // #27
+    tag.textContent = '打つ練習（アルファベット）';
+    typingChar.innerHTML = `${item.text}<span class="typing-meaning">（${item.meaning}）</span>`;
+    sub.textContent = `${readingN}マス（右から打つ）`;
+  } else if (item.type === 'kanji_idiom') {
+    // #27
+    tag.textContent = '打つ練習（漢数字熟語）';
+    typingChar.innerHTML = `${item.text}<span class="typing-meaning">（${item.meaning}）</span>`;
+    sub.textContent = `${readingN}マス（右から打つ）`;
   }
 
-  // #11 fix: typingCells は逆順（右端=最初に打つ）
   const typingCells = getTypingCells(item);
   const container   = document.getElementById('typing-cells');
   container.innerHTML = '';
@@ -396,16 +499,16 @@ function checkTypingAnswer() {
     } else {
       allCorrect = false;
       cellEl.classList.add('cell-wrong');
-      // #17 fix: ユーザーの入力ドットを上書きしない → 着色のみ（dot-missed/dot-extra クラスを除去）
-      // マス自体の cell-wrong 着色はそのまま。フィードバック下の点字マスで正解を示す。
     }
     cellEl.querySelectorAll('.typing-dot').forEach(d => d.style.pointerEvents = 'none');
   });
 
-  // 表示用テキスト
   let displayText = '';
   if (['seion','daku','handaku','youon'].includes(item.type)) displayText = item.key;
   else if (item.type === 'special') displayText = item.key.replace(/（.*?）/g, '');
+  else if (item.type === 'number') displayText = item.key;
+  else if (item.type === 'punct') displayText = item.key.replace(/（.*?）/g, '');
+  else if (item.type === 'alpha') displayText = `${item.text}（${item.meaning}）`;
   else displayText = item.text;
 
   if (allCorrect) {
@@ -416,7 +519,6 @@ function checkTypingAnswer() {
     wrong++;
     retryDeck.push(item);
     document.getElementById('stat-wrong').textContent = wrong;
-    // #13 fix: 不正解時は正しい点字を表示（showFeedback に読みテキストも渡すが点字表示が主）
     showFeedbackWithBraille(displayText, item);
   }
 
@@ -452,7 +554,6 @@ function showFeedback(isCorrect, correctAnswer) {
   }
 }
 
-// #13 fix: 打つモード不正解時に正しい点字を表示
 function showFeedbackWithBraille(displayText, item) {
   const fb   = document.getElementById('feedback');
   const icon = document.getElementById('feedback-icon');
@@ -467,11 +568,10 @@ function showFeedbackWithBraille(displayText, item) {
   corr.textContent = `正解「${displayText}」の点字（打つ向き）:`;
   masc.textContent = pick(WRONG_MASCOTS);
 
-  // #13 fix: 打つ向き（左右反転・逆順）で表示 → ユーザーが打ったマスと直接照合できる
   if (brailleAnswer) {
     brailleAnswer.innerHTML = '';
     const typingCells = getTypingCells(item);
-    typingCells.forEach(g => renderDot(g, brailleAnswer, false));
+    typingCells.forEach(g => renderDot(g, brailleAnswer, 'on'));
   }
 }
 

@@ -38,7 +38,6 @@ body {
   overflow: hidden;
 }
 
-/* 画面全体を縦分割し、本文だけをスクロールさせる */
 .app {
   max-width: 420px;
   margin: 0 auto;
@@ -48,6 +47,152 @@ body {
   flex-direction: column;
 }
 
+.app-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--purple);
+  padding: 12px 0 10px;
+  flex-shrink: 0;
+}
+
+/* ─── #28: メニュー画面 ──────────────────────────────────────────────── */
+.menu-screen {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.menu-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.menu-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.menu-mode-btn {
+  flex: 1;
+  padding: 14px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.menu-mode-btn.active {
+  background: var(--purple-light);
+  border-color: var(--purple);
+  color: var(--purple);
+  font-weight: 700;
+}
+
+.menu-level-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.menu-level-btn {
+  padding: 12px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+  line-height: 1.3;
+}
+.menu-level-btn.active {
+  background: var(--purple-light);
+  border-color: var(--purple);
+  color: var(--purple);
+  font-weight: 700;
+}
+.menu-level-sub {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-muted);
+  display: block;
+}
+.menu-level-btn.active .menu-level-sub { color: var(--purple); opacity: 0.75; }
+
+.btn-start {
+  width: 100%;
+  padding: 16px;
+  background: var(--purple);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  margin-top: 4px;
+}
+.btn-start:hover  { opacity: 0.9; }
+.btn-start:active { transform: scale(0.98); }
+
+/* ─── #28: 出題画面ラッパー ──────────────────────────────────────────── */
+.quiz-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── #28: 出題画面ヘッダー ─────────────────────────────────────────── */
+.quiz-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 10px;
+  flex-shrink: 0;
+}
+.btn-back-menu {
+  padding: 6px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.btn-back-menu:hover { border-color: var(--purple); color: var(--purple); }
+
+.quiz-mode-badge,
+.quiz-level-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.quiz-mode-badge  { background: var(--purple-light); color: var(--purple); }
+.quiz-level-badge { background: var(--teal-light);   color: var(--teal); }
+
+/* ─── スクロールエリア ───────────────────────────────────────────────── */
 .content {
   flex: 1;
   min-height: 0;
@@ -56,46 +201,7 @@ body {
   padding-bottom: 12px;
 }
 
-.app-title {
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--purple);
-  padding: 12px 0 10px;
-}
-
-/* ─── 読む/打つ トグル ───────────────────────────────────────────────── */
-.mode-row {
-  display: flex;
-  gap: 4px;
-  background: var(--gray-bg);
-  border-radius: var(--radius-md);
-  padding: 4px;
-  margin-bottom: 14px;
-}
-.mode-btn {
-  flex: 1;
-  padding: 9px 4px;
-  border: none;
-  border-radius: calc(var(--radius-md) - 2px);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.mode-btn.active {
-  background: #fff;
-  color: var(--purple);
-  font-weight: 700;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.13);
-}
-@media (prefers-color-scheme: dark) {
-  .mode-btn.active { background: #2c2c2e; }
-}
-
-/* ─── 下部バー（得点 + 次へ + タブ） ──────────────────────────────── */
+/* ─── 下部バー ───────────────────────────────────────────────────────── */
 .bottom-bar {
   flex: 0 0 auto;
   background: rgba(250,250,250,0.97);
@@ -111,24 +217,11 @@ body {
   .bottom-bar { background: rgba(17,17,17,0.97); }
 }
 
-/* タブは bottom-bar 内なので fixed 不要 */
-.tabs {
-  display: flex;
-  gap: 5px;
-  position: static;
-  padding: 0;
-  background: transparent;
-  border-top: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
 .stats {
   display: flex;
   gap: 8px;
   margin-bottom: 0;
 }
-
 .stats .stat {
   flex: 1;
   background: rgba(255,255,255,0.65);
@@ -137,35 +230,11 @@ body {
   padding: 6px 4px;
   text-align: center;
 }
-
 @media (prefers-color-scheme: dark) {
   .stats .stat { background: rgba(44,44,46,0.72); }
 }
-
-.stats .stat-num {
-  font-size: 17px;
-  line-height: 1;
-}
-
-.stats .stat-label {
-  font-size: 10px;
-  margin-top: 2px;
-}
-.tab {
-  flex: 1;
-  padding: 9px 4px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: transparent;
-  font-size: 13px; color: var(--text-muted);
-  cursor: pointer; transition: all 0.15s;
-}
-.tab.active {
-  background: var(--purple-light);
-  color: var(--purple);
-  border-color: var(--purple);
-  font-weight: 600;
-}
+.stats .stat-num  { font-size: 17px; line-height: 1; }
+.stats .stat-label { font-size: 10px; margin-top: 2px; }
 
 /* ─── プログレス ─────────────────────────────────────────────────────── */
 .progress-bar { height: 5px; background: var(--gray-bg); border-radius: 3px; margin-bottom: 12px; }
@@ -256,14 +325,27 @@ body {
   scroll-padding-inline: 8px;
 }
 
-/* ─── 読むモード: 入力エリア ─────────────────────────────────────────── */
+/* ─── #28: 読むモード 入力欄 (縦並び: テキスト + 確認ボタン中央) ─── */
 .input-area {
   width: 100%;
   align-self: stretch;
   display: flex;
+  flex-direction: column;
   gap: 8px;
   margin-top: 12px;
   margin-bottom: 0;
+}
+.input-row {
+  display: flex;
+  width: 100%;
+}
+.input-row .answer-input { flex: 1; }
+.input-check-row {
+  display: flex;
+  justify-content: center;
+}
+.input-check-row .btn-check {
+  min-width: 160px;
 }
 
 /* ─── 打つセル ───────────────────────────────────────────────────────── */
@@ -272,14 +354,8 @@ body {
   transition: border-color 0.2s, background 0.2s;
   flex-shrink: 0;
 }
-.typing-cell.cell-correct {
-  border: 2px solid var(--teal);
-  background: var(--teal-light);
-}
-.typing-cell.cell-wrong {
-  border: 2px solid var(--coral);
-  background: var(--coral-light);
-}
+.typing-cell.cell-correct { border: 2px solid var(--teal);  background: var(--teal-light); }
+.typing-cell.cell-wrong   { border: 2px solid var(--coral); background: var(--coral-light); }
 
 /* ─── 打つドット ─────────────────────────────────────────────────────── */
 .typing-dot {
@@ -295,8 +371,6 @@ body {
 .typing-dot.on  { background: var(--purple); }
 .typing-dot:hover  { transform: scale(1.2); opacity: 0.85; }
 .typing-dot:active { transform: scale(0.88); }
-.typing-dot.dot-missed { background: var(--teal)  !important; box-shadow: 0 0 0 2px var(--teal); }
-.typing-dot.dot-extra  { background: var(--coral) !important; box-shadow: 0 0 0 2px var(--coral); }
 
 /* ─── 点字グリッド（読むモード） ────────────────────────────────────── */
 .braille-wrapper {
@@ -354,6 +428,9 @@ body {
 .dot.on     { background: var(--purple); }
 .dot.off    { background: var(--border); }
 .dot.prefix { background: var(--teal); }
+/* #5: 数符（オレンジ）・アルファベット符（緑ティール） */
+.dot.suufu  { background: #D97706; }
+.dot.alpha  { background: var(--teal); }
 
 /* ─── フィードバック ─────────────────────────────────────────────────── */
 .feedback {
@@ -377,7 +454,6 @@ body {
 .feedback-correct { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
 .mascot { font-size: 42px; margin-top: 8px; animation: popIn 0.5s 0.1s both cubic-bezier(0.175,0.885,0.32,1.275); }
 
-/* #13 fix: 不正解時の正しい点字表示エリア */
 .feedback-braille {
   justify-content: center;
   margin: 6px auto 4px;
@@ -385,7 +461,7 @@ body {
 }
 .feedback-braille:empty { display: none; }
 
-/* ─── 入力エリア（読むモード） ───────────────────────────────────────── */
+/* ─── 入力フィールド ─────────────────────────────────────────────────── */
 .answer-input {
   flex: 1; padding: 12px 14px;
   border: 1.5px solid var(--border);
@@ -394,6 +470,7 @@ body {
   background: #fff;
   transition: border-color 0.15s;
   outline: none;
+  width: 100%;
 }
 @media (prefers-color-scheme: dark) { .answer-input { background: #1c1c1e; } }
 .answer-input:focus { border-color: var(--purple); }
@@ -409,7 +486,6 @@ body {
   font-size: 15px; font-weight: 600;
   cursor: pointer; transition: opacity 0.15s, transform 0.1s;
   white-space: nowrap;
-  margin-top: 2px;
 }
 .btn-check:hover  { opacity: 0.9; }
 .btn-check:active { transform: scale(0.97); }
@@ -428,6 +504,7 @@ body {
 .btn-next       { border-color: var(--purple); color: var(--purple); font-weight: 600; }
 .btn-retry      { border-color: var(--teal);   color: var(--teal);   font-weight: 600; }
 .btn-wrong-only { border-color: var(--coral);  color: var(--coral); }
+.btn-menu       { border-color: var(--purple); color: var(--purple); font-weight: 600; }
 
 /* ─── 結果画面 ───────────────────────────────────────────────────────── */
 .result { text-align: center; padding: 20px 12px; }
@@ -438,4 +515,4 @@ body {
 .result-score-wrap { background: var(--purple-light); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 16px; }
 .result-score { font-size: 42px; font-weight: 700; color: var(--purple); }
 .result-score-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-.result-btns { display: flex; gap: 8px; }
+.result-btns { display: flex; gap: 8px; flex-wrap: wrap; }
